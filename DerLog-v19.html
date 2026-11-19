@@ -962,10 +962,10 @@ function BookingCard({item,onEdit,onPreview,currency}){
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-semibold leading-tight truncate">{stay?(b.property||item.title):(b.operator||item.title)}</div>
-          <div className="text-[10.5px] subtext-clr mt-0.5 truncate">{[dateLabel||L(stay?'Accommodation':'Transport booking'),b.vehicleType||''].filter(Boolean).join(' · ')}</div>
+          <div className="text-[10.5px] subtext-clr mt-0.5 truncate">{[dateLabel||tr(stay?'Accommodation':'Transport booking'),b.vehicleType||''].filter(Boolean).join(' · ')}</div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-[10px] px-2 py-[3px] rounded-full bg-[#1B54FF]/15 accent-txt font-medium">{L(stay?'Stay':'Transport')}</span>
+          <span className="text-[10px] px-2 py-[3px] rounded-full bg-[#1B54FF]/15 accent-txt font-medium">{tr(stay?'Stay':'Transport')}</span>
           {onEdit&&<button type="button" onClick={onEdit} aria-label="Edit booking" className="w-6 h-6 rounded-full glass-pill flex items-center justify-center opacity-70"><Icon name="edit" size={11}/></button>}
         </div>
       </div>
@@ -973,25 +973,25 @@ function BookingCard({item,onEdit,onPreview,currency}){
         {stay?(
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-1.5">
             <div className="min-w-0">
-              <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{L('Check in')}</div>
-              <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkIn?formatDateStr(checkIn):L('Not on ticket')}</div>
-              {checkIn?<div className="text-[10px] subtext-clr mt-0.5">{L('from')} {to12Hour(checkInTime)}</div>:null}
+              <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{tr('Check in')}</div>
+              <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkIn?formatDateStr(checkIn):tr('Not on ticket')}</div>
+              {checkIn?<div className="text-[10px] subtext-clr mt-0.5">{tr('from')} {to12Hour(checkInTime)}</div>:null}
             </div>
             <div className="flex flex-col items-center px-1 pt-1 text-[#1B54FF]">
-              <span className="text-[9.5px] subtext-clr whitespace-nowrap mb-1">{nights?`${nights} ${nights===1?L('night'):L('nights')}`:L('Nights')}</span>
+              <span className="text-[9.5px] subtext-clr whitespace-nowrap mb-1">{nights?`${nights} ${nights===1?tr('night'):tr('nights')}`:tr('Nights')}</span>
               <span className="flex items-center w-[62px]"><i className="w-1.5 h-1.5 rounded-full border border-current shrink-0"/><span className="flex-1 bp-dots"/><i className="w-1.5 h-1.5 rounded-full border border-current shrink-0"/></span>
             </div>
             <div className="min-w-0 text-right">
-              <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{L('Check out')}</div>
-              <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkOut?formatDateStr(checkOut):L('Not on ticket')}</div>
-              {checkOut?<div className="text-[10px] subtext-clr mt-0.5">{L('until')} {to12Hour(checkOutTime)}</div>:null}
+              <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{tr('Check out')}</div>
+              <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkOut?formatDateStr(checkOut):tr('Not on ticket')}</div>
+              {checkOut?<div className="text-[10px] subtext-clr mt-0.5">{tr('until')} {to12Hour(checkOutTime)}</div>:null}
             </div>
           </div>
         ):(
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-1.5">
             <div className="min-w-0">
               <div className="text-[9.5px] subtext-clr uppercase tracking-wider">From</div>
-              <div className="text-[12px] font-semibold leading-tight break-words">{b.origin||L('Not on ticket')}</div>
+              <div className="text-[12px] font-semibold leading-tight break-words">{b.origin||tr('Not on ticket')}</div>
               <div className="text-[13.5px] font-semibold accent-txt mt-1 tabular-nums">{dep?to12Hour(dep):'--:--'}</div>
             </div>
             <div className="flex flex-col items-center px-1 pt-1 text-[#1B54FF]">
@@ -1001,7 +1001,7 @@ function BookingCard({item,onEdit,onPreview,currency}){
             </div>
             <div className="min-w-0 text-right">
               <div className="text-[9.5px] subtext-clr uppercase tracking-wider">To</div>
-              <div className="text-[12px] font-semibold leading-tight break-words">{b.destination||L('Not on ticket')}</div>
+              <div className="text-[12px] font-semibold leading-tight break-words">{b.destination||tr('Not on ticket')}</div>
               <div className="text-[13.5px] font-semibold accent-txt mt-1 tabular-nums">{arr?to12Hour(arr):'--:--'}</div>
             </div>
           </div>
@@ -1010,19 +1010,19 @@ function BookingCard({item,onEdit,onPreview,currency}){
         {stay?(
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2 text-[11.5px]">
-              <span className="subtext-clr flex items-center gap-1.5"><Icon name="bed" size={11}/>{L('Room type')}</span>
-              <span className="font-medium truncate max-w-[58%]">{b.roomType||L('Not on ticket')}</span>
+              <span className="subtext-clr flex items-center gap-1.5"><Icon name="bed" size={11}/>{tr('Room type')}</span>
+              <span className="font-medium truncate max-w-[58%]">{b.roomType||tr('Not on ticket')}</span>
             </div>
             <div className="flex items-center justify-between gap-2 text-[11.5px]">
-              <span className="subtext-clr flex items-center gap-1.5"><Icon name="user" size={11}/>{L('Guest')}</span>
-              <span className="font-medium truncate max-w-[58%]">{b.guestName||L('Not on ticket')}</span>
+              <span className="subtext-clr flex items-center gap-1.5"><Icon name="user" size={11}/>{tr('Guest')}</span>
+              <span className="font-medium truncate max-w-[58%]">{b.guestName||tr('Not on ticket')}</span>
             </div>
             <div className="flex items-center justify-between gap-2 text-[11.5px]">
-              <span className="subtext-clr flex items-center gap-1.5"><Icon name="users" size={11}/>{L('Guests')}</span>
-              <span className="font-medium">{b.guests?(b.guests+(Number(b.guests)===1?' guest':' guests')):L('Not on ticket')}</span>
+              <span className="subtext-clr flex items-center gap-1.5"><Icon name="users" size={11}/>{tr('Guests')}</span>
+              <span className="font-medium">{b.guests?(b.guests+(Number(b.guests)===1?' guest':' guests')):tr('Not on ticket')}</span>
             </div>
             {b.contact?<div className="flex items-center justify-between gap-2 text-[11.5px]">
-              <span className="subtext-clr flex items-center gap-1.5"><Icon name="fileText" size={11}/>{L('Contact')}</span>
+              <span className="subtext-clr flex items-center gap-1.5"><Icon name="fileText" size={11}/>{tr('Contact')}</span>
               <span className="font-medium truncate max-w-[58%]">{b.contact}</span>
             </div>:null}
           </div>
@@ -1032,19 +1032,19 @@ function BookingCard({item,onEdit,onPreview,currency}){
               {passengers.map((p,i)=>(
                 <div key={i} className="flex items-center justify-between gap-2 text-[11.5px]">
                   <span className="flex items-center gap-1.5 min-w-0"><Icon name="user" size={11} className="opacity-45"/><span className="truncate">{p.name||'Passenger'}</span></span>
-                  <span className="flex items-center gap-1 shrink-0 subtext-clr chk-seat"><Icon name="seat" size={11}/>{p.seat?`${L('Seat')} ${p.seat}`:'—'}</span>
+                  <span className="flex items-center gap-1 shrink-0 subtext-clr chk-seat"><Icon name="seat" size={11}/>{p.seat?`${tr('Seat')} ${p.seat}`:'—'}</span>
                 </div>
               ))}
             </div>
-          ):<div className="text-[11px] subtext-clr">{L('Passengers not on ticket')}</div>
+          ):<div className="text-[11px] subtext-clr">{tr('Passengers not on ticket')}</div>
         )}
         <div className="flex items-end justify-between gap-2 pt-2.5">
           <div className="min-w-0">
-            <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{L(stay?'Confirmation #':'Ticket #')}</div>
-            <div className="text-[11px] font-medium truncate chk-seat">{code||L('Not on ticket')}</div>
+            <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{tr(stay?'Confirmation #':'Ticket #')}</div>
+            <div className="text-[11px] font-medium truncate chk-seat">{code||tr('Not on ticket')}</div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{L('Total')}</div>
+            <div className="text-[9.5px] subtext-clr uppercase tracking-wider">{tr('Total')}</div>
             <div className="text-[14px] font-semibold text-[#FEB122]">{money(total,{currency})}</div>
             <div className="text-[9.5px] subtext-clr">{stay?(nights?`${nights} ${nights===1?'night':'nights'}`:''):(passengers.length?`${passengers.length} ${passengers.length===1?'seat':'seats'}`:'')}</div>
           </div>
@@ -1052,8 +1052,8 @@ function BookingCard({item,onEdit,onPreview,currency}){
       </div>
       <div className="flex items-center justify-between gap-2 px-3.5 pb-3 pt-2.5">
         {item.attachment&&item.attachment.value?(
-          <button type="button" onClick={()=>onPreview&&onPreview(item.attachment)} className="text-[11px] accent-txt underline underline-offset-2 inline-flex items-center gap-1"><Icon name={item.attachment.type==='pdf'?'fileText':'image'} size={10}/>{L('View original booking')} {item.attachment.type==='pdf'?'PDF':'image'}</button>
-        ):<span className="text-[10px] subtext-clr">{L('Added manually')}</span>}
+          <button type="button" onClick={()=>onPreview&&onPreview(item.attachment)} className="text-[11px] accent-txt underline underline-offset-2 inline-flex items-center gap-1"><Icon name={item.attachment.type==='pdf'?'fileText':'image'} size={10}/>{tr('View original booking')} {item.attachment.type==='pdf'?'PDF':'image'}</button>
+        ):<span className="text-[10px] subtext-clr">{tr('Added manually')}</span>}
       </div>
     </div>
   );
@@ -1211,8 +1211,8 @@ function BookingCreator({trip,initial,onSave,onClose}){
       <form onSubmit={handleSubmit} className="modal-bg w-full max-w-[360px] max-h-[88%] overflow-y-auto no-scrollbar rounded-[28px] border p-4 space-y-3 shadow-2xl">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-sm font-semibold">{L(source?'Edit booking':'New booking')}</h3>
-            <p className="text-[11px] subtext-clr mt-1">{L('Transport tickets and stays, stored in one place')}</p>
+            <h3 className="text-sm font-semibold">{tr(source?'Edit booking':'New booking')}</h3>
+            <p className="text-[11px] subtext-clr mt-1">{tr('Transport tickets and stays, stored in one place')}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Close booking form" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center shrink-0"><Icon name="close" size={12}/></button>
         </div>
@@ -1221,130 +1221,130 @@ function BookingCreator({trip,initial,onSave,onClose}){
           <div className="flex items-center gap-2.5">
             <span className="w-9 h-9 rounded-xl bg-[#1B54FF] text-white flex items-center justify-center shrink-0"><Icon name="camera" size={17}/></span>
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-semibold">{L('Scan the ticket')}</div>
-              <div className="text-[10.5px] subtext-clr mt-0.5">{L('We read a photo or PDF, fill what is missing, you correct the rest.')}</div>
+              <div className="text-[12px] font-semibold">{tr('Scan the ticket')}</div>
+              <div className="text-[10.5px] subtext-clr mt-0.5">{tr('We read a photo or PDF, fill what is missing, you correct the rest.')}</div>
             </div>
             <label className="shrink-0 bg-[#1B54FF] text-white text-[11.5px] font-semibold px-3 py-1.5 rounded-full cursor-pointer">
-              {scanning?L('Reading…'):L('Scan')}
+              {scanning?tr('Reading…'):tr('Scan')}
               <input type="file" accept="image/*,application/pdf" className="custom-file-input" disabled={scanning} onChange={e=>{const f=e.target.files&&e.target.files[0];runScan(f);e.target.value=''}}/>
             </label>
           </div>
           {status&&<div className="text-[10.5px] subtext-clr leading-relaxed">{status}</div>}
           {filled.length>0&&<div className="flex flex-wrap gap-1">{filled.map(f=><span key={f} className="text-[10px] px-1.5 py-[2px] rounded-full accent-txt bg-[#1B54FF]/12 border border-[#1B54FF]/30 inline-flex items-center gap-1"><Icon name="sparkle" size={8}/>{f}</span>)}</div>}
-          {attachment&&<div className="flex items-center justify-between gap-2"><span className="text-[10px] subtext-clr inline-flex items-center gap-1"><Icon name={attachment.type==='pdf'?'fileText':'image'} size={10}/>{L(attachment.type==='pdf'?'Ticket PDF attached':'Ticket photo attached')}</span><button type="button" onClick={()=>setAttachment(null)} className="text-[10px] underline opacity-60">{L('Remove')}</button></div>}
+          {attachment&&<div className="flex items-center justify-between gap-2"><span className="text-[10px] subtext-clr inline-flex items-center gap-1"><Icon name={attachment.type==='pdf'?'fileText':'image'} size={10}/>{tr(attachment.type==='pdf'?'Ticket PDF attached':'Ticket photo attached')}</span><button type="button" onClick={()=>setAttachment(null)} className="text-[10px] underline opacity-60">{tr('Remove')}</button></div>}
         </div>
 
         <div className="grid grid-cols-2 gap-1.5">
-          <button type="button" onClick={()=>setMode('transport')} className={`py-2 rounded-xl text-[11.5px] font-semibold inline-flex items-center justify-center gap-1.5 ${mode==='transport'?'bg-[#1B54FF] text-white':'glass-pill'}`}><Icon name="bus" size={13}/>{L('Transport')}</button>
-          <button type="button" onClick={()=>setMode('stay')} className={`py-2 rounded-xl text-[11.5px] font-semibold inline-flex items-center justify-center gap-1.5 ${mode==='stay'?'bg-[#1B54FF] text-white':'glass-pill'}`}><Icon name="hotel" size={13}/>{L('Accommodation')}</button>
+          <button type="button" onClick={()=>setMode('transport')} className={`py-2 rounded-xl text-[11.5px] font-semibold inline-flex items-center justify-center gap-1.5 ${mode==='transport'?'bg-[#1B54FF] text-white':'glass-pill'}`}><Icon name="bus" size={13}/>{tr('Transport')}</button>
+          <button type="button" onClick={()=>setMode('stay')} className={`py-2 rounded-xl text-[11.5px] font-semibold inline-flex items-center justify-center gap-1.5 ${mode==='stay'?'bg-[#1B54FF] text-white':'glass-pill'}`}><Icon name="hotel" size={13}/>{tr('Accommodation')}</button>
         </div>
 
         {mode==='transport'?(
           <>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Operator / line')}
+              <label className="block text-[10px] subtext-clr">{tr('Operator / line')}
                 <input value={t.operator} onChange={e=>setT(v=>({...v,operator:e.target.value}))} placeholder="EVGO Express" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Ticket #')}
+              <label className="block text-[10px] subtext-clr">{tr('Ticket #')}
                 <input value={t.ticketNumber} onChange={e=>setT(v=>({...v,ticketNumber:e.target.value}))} placeholder="KHVAH60991731" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
-            <label className="block text-[10px] subtext-clr">{L('Bus type')}
+            <label className="block text-[10px] subtext-clr">{tr('Bus type')}
               <input value={t.vehicleType||''} onChange={e=>setT(v=>({...v,vehicleType:e.target.value}))} placeholder="Minivan / Sleeper Bus / Bus" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Origin')}
+              <label className="block text-[10px] subtext-clr">{tr('Origin')}
                 <input value={t.origin} onChange={e=>setT(v=>({...v,origin:e.target.value}))} placeholder="Phnom Penh" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Destination')}
+              <label className="block text-[10px] subtext-clr">{tr('Destination')}
                 <input value={t.destination} onChange={e=>setT(v=>({...v,destination:e.target.value}))} placeholder="Siem Reap" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
-            <label className="block text-[10px] subtext-clr">{L('Travel date')}
+            <label className="block text-[10px] subtext-clr">{tr('Travel date')}
               <input type="date" value={t.travelDate} onChange={e=>setT(v=>({...v,travelDate:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Departs')}
+              <label className="block text-[10px] subtext-clr">{tr('Departs')}
                 <input type="time" value={t.departureTime} onChange={e=>setT(v=>({...v,departureTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Arrives')}
+              <label className="block text-[10px] subtext-clr">{tr('Arrives')}
                 <input type="time" value={t.arrivalTime} onChange={e=>setT(v=>({...v,arrivalTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
             <div className="flex items-center justify-between rounded-lg px-2.5 py-2 glass-pill text-[11px]">
-              <span className="subtext-clr inline-flex items-center gap-1.5"><Icon name="clock" size={11}/>{L('Time on the road')}</span>
-              <strong className="accent-txt">{duration?formatDuration(duration):L('Add both times')}</strong>
+              <span className="subtext-clr inline-flex items-center gap-1.5"><Icon name="clock" size={11}/>{tr('Time on the road')}</span>
+              <strong className="accent-txt">{duration?formatDuration(duration):tr('Add both times')}</strong>
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] subtext-clr">{L('Passengers & seats')}</span>
-                <button type="button" onClick={addPassenger} className="text-[11px] accent-txt inline-flex items-center gap-1"><Icon name="plus" size={10}/>{L('Add')}</button>
+                <span className="text-[10px] subtext-clr">{tr('Passengers & seats')}</span>
+                <button type="button" onClick={addPassenger} className="text-[11px] accent-txt inline-flex items-center gap-1"><Icon name="plus" size={10}/>{tr('Add')}</button>
               </div>
               {t.passengers.map((p,idx)=>(
                 <div key={idx} className="flex items-center gap-1.5">
-                  <input value={p.name} onChange={e=>setPassenger(idx,{name:e.target.value})} placeholder={L('Passenger')+' '+(idx+1)} className="input-bg flex-1 min-w-0 rounded-lg px-2.5 py-2 text-[11.5px] outline-none"/>
-                  <input value={p.seat} onChange={e=>setPassenger(idx,{seat:e.target.value})} placeholder={L('Seat')} className="input-bg w-[58px] rounded-lg px-2 py-2 text-[11.5px] text-center outline-none"/>
+                  <input value={p.name} onChange={e=>setPassenger(idx,{name:e.target.value})} placeholder={tr('Passenger')+' '+(idx+1)} className="input-bg flex-1 min-w-0 rounded-lg px-2.5 py-2 text-[11.5px] outline-none"/>
+                  <input value={p.seat} onChange={e=>setPassenger(idx,{seat:e.target.value})} placeholder={tr('Seat')} className="input-bg w-[58px] rounded-lg px-2 py-2 text-[11.5px] text-center outline-none"/>
                   <button type="button" onClick={()=>removePassenger(idx)} aria-label="Remove passenger" className="w-8 h-8 rounded-lg glass-pill flex items-center justify-center opacity-60"><Icon name="close" size={10}/></button>
                 </div>
               ))}
             </div>
-            <label className="block text-[10px] subtext-clr">{L('Total paid')} ({currencyOf(trip).code})
+            <label className="block text-[10px] subtext-clr">{tr('Total paid')} ({currencyOf(trip).code})
               <input type="number" min="0" step="0.01" value={t.total} onChange={e=>setT(v=>({...v,total:e.target.value}))} placeholder="32.00" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
             </label>
           </>
         ):(
           <>
-            <label className="block text-[10px] subtext-clr">{L('Property name')}
+            <label className="block text-[10px] subtext-clr">{tr('Property name')}
               <input value={s.property} onChange={e=>setS(v=>({...v,property:e.target.value}))} placeholder="Indochine Hotel" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none" required/>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Check in')}
+              <label className="block text-[10px] subtext-clr">{tr('Check in')}
                 <input type="date" value={s.checkIn} onChange={e=>setS(v=>({...v,checkIn:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Check out')}
+              <label className="block text-[10px] subtext-clr">{tr('Check out')}
                 <input type="date" min={s.checkIn} value={s.checkOut} onChange={e=>setS(v=>({...v,checkOut:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Check-in time')}
+              <label className="block text-[10px] subtext-clr">{tr('Check-in time')}
                 <input type="time" value={s.checkInTime||'14:00'} onChange={e=>setS(v=>({...v,checkInTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Check-out time')}
+              <label className="block text-[10px] subtext-clr">{tr('Check-out time')}
                 <input type="time" value={s.checkOutTime||'12:00'} onChange={e=>setS(v=>({...v,checkOutTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
             <div className="flex items-center justify-between rounded-lg px-2.5 py-2 glass-pill text-[11px]">
-              <span className="subtext-clr inline-flex items-center gap-1.5"><Icon name="bed" size={11}/>{L('Length of stay')}</span>
-              <strong className="accent-txt">{nights?`${nights} ${nights===1?L('night'):L('nights')}`:L('Pick both dates')}</strong>
+              <span className="subtext-clr inline-flex items-center gap-1.5"><Icon name="bed" size={11}/>{tr('Length of stay')}</span>
+              <strong className="accent-txt">{nights?`${nights} ${nights===1?tr('night'):tr('nights')}`:tr('Pick both dates')}</strong>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Room type')}
+              <label className="block text-[10px] subtext-clr">{tr('Room type')}
                 <input value={s.roomType} onChange={e=>setS(v=>({...v,roomType:e.target.value}))} placeholder="Double Bed" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Total paid')} ({currencyOf(trip).code})
+              <label className="block text-[10px] subtext-clr">{tr('Total paid')} ({currencyOf(trip).code})
                 <input type="number" min="0" step="0.01" value={s.total} onChange={e=>setS(v=>({...v,total:e.target.value}))} placeholder="22.00" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
-            <label className="block text-[10px] subtext-clr">{L('Confirmation #')}
+            <label className="block text-[10px] subtext-clr">{tr('Confirmation #')}
               <input value={s.confirmationNumber} onChange={e=>setS(v=>({...v,confirmationNumber:e.target.value}))} placeholder="45524560991731" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
             </label>
             <div className="grid grid-cols-[1.6fr_.7fr] gap-2">
-              <label className="block text-[10px] subtext-clr">{L('Guest name')}
+              <label className="block text-[10px] subtext-clr">{tr('Guest name')}
                 <input value={s.guestName} onChange={e=>setS(v=>({...v,guestName:e.target.value}))} placeholder="Sopanha Meyson" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
-              <label className="block text-[10px] subtext-clr">{L('Guests')}
+              <label className="block text-[10px] subtext-clr">{tr('Guests')}
                 <input type="number" min="1" step="1" value={s.guests} onChange={e=>setS(v=>({...v,guests:e.target.value}))} placeholder="2" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
-            <label className="block text-[10px] subtext-clr">{L('Phone or email')}
+            <label className="block text-[10px] subtext-clr">{tr('Phone or email')}
               <input value={s.contact} onChange={e=>setS(v=>({...v,contact:e.target.value}))} placeholder="+855 95 298 192" className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
             </label>
           </>
         )}
 
         <div className="flex gap-2 pt-1">
-          <button type="button" onClick={onClose} className="w-1/3 glass-pill text-[11.5px] py-2.5 rounded-full font-medium">{L('Cancel')}</button>
-          <button type="submit" disabled={busy||scanning} className="w-2/3 bg-[#1B54FF] text-white text-[11.5px] font-semibold py-2.5 rounded-full disabled:opacity-60 inline-flex items-center justify-center gap-1.5">{busy?<><Icon name="clock" size={12}/>{L('Saving…')}</>:<><Icon name="check" size={13}/>{L('Save booking')}</>}</button>
+          <button type="button" onClick={onClose} className="w-1/3 glass-pill text-[11.5px] py-2.5 rounded-full font-medium">{tr('Cancel')}</button>
+          <button type="submit" disabled={busy||scanning} className="w-2/3 bg-[#1B54FF] text-white text-[11.5px] font-semibold py-2.5 rounded-full disabled:opacity-60 inline-flex items-center justify-center gap-1.5">{busy?<><Icon name="clock" size={12}/>{tr('Saving…')}</>:<><Icon name="check" size={13}/>{tr('Save booking')}</>}</button>
         </div>
       </form>
     </div>
@@ -1383,7 +1383,7 @@ function BookingSheet({items,onNew,onOpen,onClose,currency}){
       <div className="modal-bg w-full max-w-[360px] max-h-[86%] overflow-y-auto no-scrollbar rounded-[28px] border p-4 space-y-3 shadow-2xl">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-sm font-semibold">{L('Bookings')}</h3><p className="text-[11px] subtext-clr mt-1">{L('Tickets and stays for this trip')}</p>
+            <h3 className="text-sm font-semibold">{tr('Bookings')}</h3><p className="text-[11px] subtext-clr mt-1">{tr('Tickets and stays for this trip')}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Close bookings" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center shrink-0"><Icon name="close" size={12}/></button>
         </div>
@@ -1813,7 +1813,7 @@ function OnboardingScreen({data,googleClientId,onComplete}){
  const go=next=>{setMessage('');setStep(next)};
 
  const signInWithGoogle=async()=>{
-   if(!clientId){setMessage(L('Google sign-in is not available in this build. Continue offline below.'));return}
+   if(!clientId){setMessage(tr('Google sign-in is not available in this build. Continue offline below.'));return}
    setBusy('google');setMessage('');
    try{
      const access=await requestGoogleAccess(clientId);
@@ -1827,17 +1827,17 @@ function OnboardingScreen({data,googleClientId,onComplete}){
        setFound({kind:'cloud',trips:cloud.payload.data.trips,bucketList:Array.isArray(cloud.payload.bucketList)?cloud.payload.bucketList:[],label:'Your DerLog cloud'});
        setStep('existing');
      }else{
-       if(cloudError)setMessage(L('Signed in, but the cloud copy could not be read: ')+cloudError);
+       if(cloudError)setMessage(tr('Signed in, but the cloud copy could not be read: ')+cloudError);
        setStep('preview');
      }
-   }catch(err){setMessage(err&&err.message?err.message:L('Google sign-in failed.'))}
+   }catch(err){setMessage(err&&err.message?err.message:tr('Google sign-in failed.'))}
    finally{setBusy('')}
  };
 
  const continueOffline=e=>{
    e.preventDefault();
    const clean=name.trim();
-   if(!clean){setMessage(L('Add the name DerLog should greet you with.'));return}
+   if(!clean){setMessage(tr('Add the name DerLog should greet you with.'));return}
    setAccount({mode:'local',profile:{userName:clean,userEmail:'',userProfilePic:''},session:null});
    setScanState('idle');setFound(null);setMessage('');setStep('scan');
  };
@@ -1858,7 +1858,7 @@ function OnboardingScreen({data,googleClientId,onComplete}){
      const payload=await readBackupFile(file);
      setFound({kind:'file',trips:payload.data.trips,bucketList:payload.bucketList||[],label:file.name});
      setStep('existing');
-   }catch(err){setMessage(err&&err.message?err.message:L('That backup could not be read.'))}
+   }catch(err){setMessage(err&&err.message?err.message:tr('That backup could not be read.'))}
    finally{setBusy('')}
  };
 
@@ -1869,9 +1869,9 @@ function OnboardingScreen({data,googleClientId,onComplete}){
 
  const createFirstTrip=async e=>{
    e.preventDefault();
-   if(!tripTitle.trim()){setMessage(L('Where are you going? Add a destination.'));return}
-   if(!tripStart||!tripEnd){setMessage(L('Choose the dates for this trip.'));return}
-   if(tripEnd<tripStart){setMessage(L('The end date cannot be before the start date.'));return}
+   if(!tripTitle.trim()){setMessage(tr('Where are you going? Add a destination.'));return}
+   if(!tripStart||!tripEnd){setMessage(tr('Choose the dates for this trip.'));return}
+   if(tripEnd<tripStart){setMessage(tr('The end date cannot be before the start date.'));return}
    setBusy('trip');setMessage('');
    const destination=tripTitle.trim();
    let coords=[13.3622,103.8597],locationLabel=destination;
@@ -1904,99 +1904,99 @@ function OnboardingScreen({data,googleClientId,onComplete}){
    {step==='welcome'&&<div key="welcome" className="wlc-fade flex-1 flex flex-col px-7 pb-9 pt-3">
      <div className="flex-1 min-h-[28px]"/>
      <div className="flex items-center gap-2"><span className="w-8 h-8 rounded-[11px] bg-white text-[#040811] flex items-center justify-center font-bold text-[15px]">D</span><span className="text-[15px] font-semibold tracking-tight">DerLog</span></div>
-     <p className="text-[11px] uppercase tracking-[0.28em] text-[#83F9FF]/80">{L('Your journeys, kept')}</p>
-     <h1 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.03em] mt-3">{L('Every trip,')}<br/>{L('remembered.')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/55 mt-3 max-w-[280px]">{L('Scan your tickets, plan each day and keep the whole journey in one quiet place.')}</p>
-     <button onClick={()=>go('account')} className="mt-7 w-full h-[52px] rounded-full bg-white text-[#040811] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 shadow-[0_18px_40px_rgba(0,0,0,.45)]">{L('Get started')}<Icon name="chevronRight" size={13} strokeWidth={2.4}/></button>
-     <div className="flex items-center justify-center gap-1.5 text-[11px] text-white/40 mt-4"><Icon name="shield" size={10}/>{L('Private by default · Cloud optional')}</div>
+     <p className="text-[11px] uppercase tracking-[0.28em] text-[#83F9FF]/80">{tr('Your journeys, kept')}</p>
+     <h1 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.03em] mt-3">{tr('Every trip,')}<br/>{tr('remembered.')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/55 mt-3 max-w-[280px]">{tr('Scan your tickets, plan each day and keep the whole journey in one quiet place.')}</p>
+     <button onClick={()=>go('account')} className="mt-7 w-full h-[52px] rounded-full bg-white text-[#040811] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 shadow-[0_18px_40px_rgba(0,0,0,.45)]">{tr('Get started')}<Icon name="chevronRight" size={13} strokeWidth={2.4}/></button>
+     <div className="flex items-center justify-center gap-1.5 text-[11px] text-white/40 mt-4"><Icon name="shield" size={10}/>{tr('Private by default · Cloud optional')}</div>
    </div>}
 
    {step==='account'&&<div key="account" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2">
      <div className="flex-1 min-h-[28px]"/>
-     <button onClick={()=>go('welcome')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{L('Back')}</button>
-     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{L('Create your')}<br/>{L('DerLog account')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{L('Choose how your trips are kept. You can change this later in Settings.')}</p>
+     <button onClick={()=>go('welcome')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{tr('Back')}</button>
+     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{tr('Create your')}<br/>{tr('DerLog account')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{tr('Choose how your trips are kept. You can change this later in Settings.')}</p>
      <div className="mt-6 space-y-3">
        <button type="button" onClick={signInWithGoogle} disabled={Boolean(busy)||!googleReady} className="w-full rounded-[18px] bg-white text-[#040811] p-3.5 text-left disabled:opacity-60">
          <span className="flex items-center gap-2.5">
            <GoogleMark size={18}/>
            <span className="flex-1">
-             <span className="block text-[13px] font-semibold leading-tight">{busy==='google'?L('Connecting to Google…'):L('Continue with Google')}</span>
-             <span className="block text-[10.5px] text-[#040811]/55 mt-0.5">{L('Cloud account · syncs across your devices')}</span>
+             <span className="block text-[13px] font-semibold leading-tight">{busy==='google'?tr('Connecting to Google…'):tr('Continue with Google')}</span>
+             <span className="block text-[10.5px] text-[#040811]/55 mt-0.5">{tr('Cloud account · syncs across your devices')}</span>
            </span>
            <Icon name="chevronRight" size={12} strokeWidth={2.2}/>
          </span>
        </button>
-       {!googleReady&&<p className="text-[10.5px] leading-relaxed text-white/40 px-1">{L('Google sign-in is not available in this build. Continue offline below.')}</p>}
-       <div className="wlc-divider">{L('or')}</div>
+       {!googleReady&&<p className="text-[10.5px] leading-relaxed text-white/40 px-1">{tr('Google sign-in is not available in this build. Continue offline below.')}</p>}
+       <div className="wlc-divider">{tr('or')}</div>
        <button type="button" onClick={()=>go('offlineName')} className="w-full rounded-[18px] border border-white/20 bg-white/[0.06] p-3.5 text-left">
          <span className="flex items-center gap-2.5">
            <span className="w-[18px] flex justify-center text-white/70"><Icon name="user" size={16}/></span>
            <span className="flex-1">
-             <span className="block text-[13px] font-semibold leading-tight">{L('Use DerLog offline')}</span>
-             <span className="block text-[10.5px] text-white/50 mt-0.5">{L('No account · just your name · this phone only')}</span>
+             <span className="block text-[13px] font-semibold leading-tight">{tr('Use DerLog offline')}</span>
+             <span className="block text-[10.5px] text-white/50 mt-0.5">{tr('No account · just your name · this phone only')}</span>
            </span>
            <Icon name="chevronRight" size={12} strokeWidth={2.2}/>
          </span>
        </button>
        {message&&<p className="text-[11.5px] text-[#FEB122] leading-relaxed">{message}</p>}
      </div>
-     <p className="text-[10.5px] leading-relaxed text-white/30">{L('Cloud trips are stored in your own Google Drive app folder, not on a DerLog server. Offline mode never uploads anything.')}</p>
+     <p className="text-[10.5px] leading-relaxed text-white/30">{tr('Cloud trips are stored in your own Google Drive app folder, not on a DerLog server. Offline mode never uploads anything.')}</p>
    </div>}
 
    {step==='offlineName'&&<div key="offline" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2">
      <div className="flex-1 min-h-[28px]"/>
-     <button onClick={()=>go('account')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{L('Back')}</button>
-     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{L('What should')}<br/>{L('we call you?')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{L('Your full name or just a nickname — whatever you like seeing on the home screen. No email needed.')}</p>
+     <button onClick={()=>go('account')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{tr('Back')}</button>
+     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{tr('What should')}<br/>{tr('we call you?')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{tr('Your full name or just a nickname — whatever you like seeing on the home screen. No email needed.')}</p>
      <form onSubmit={continueOffline} className="mt-7 space-y-3">
-       <input value={name} onChange={e=>{setName(e.target.value);setMessage('')}} placeholder={L('Your name or nickname')} className="wlc-input" autoComplete="nickname" autoFocus maxLength={40}/>
+       <input value={name} onChange={e=>{setName(e.target.value);setMessage('')}} placeholder={tr('Your name or nickname')} className="wlc-input" autoComplete="nickname" autoFocus maxLength={40}/>
        {message&&<p className="text-[11.5px] text-[#FEB122] leading-relaxed">{message}</p>}
-       <button type="submit" className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Continue')}</button>
+       <button type="submit" className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Continue')}</button>
      </form>
-     <p className="text-[10.5px] leading-relaxed text-white/30">{L("Trips, bookings and photos stay in this app's storage on this phone.")}</p>
+     <p className="text-[10.5px] leading-relaxed text-white/30">{tr("Trips, bookings and photos stay in this app's storage on this phone.")}</p>
    </div>}
 
    {step==='scan'&&<div key="scan" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2 overflow-y-auto no-scrollbar">
      <div className="flex-1 min-h-[28px]"/>
-     <button onClick={()=>go('offlineName')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{L('Back')}</button>
-     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{L('Have you used')}<br/>{L('DerLog before?')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{L('DerLog can check its own app storage for an earlier profile and trips. It will not look anywhere else on your phone.')}</p>
+     <button onClick={()=>go('offlineName')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{tr('Back')}</button>
+     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{tr('Have you used')}<br/>{tr('DerLog before?')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{tr('DerLog can check its own app storage for an earlier profile and trips. It will not look anywhere else on your phone.')}</p>
      <div className="mt-6 rounded-[18px] border border-white/15 bg-white/[0.05] p-4 space-y-1.5">
-       <div className="flex items-center gap-2 text-[12px] font-semibold"><Icon name="shield" size={12}/>{L("Only DerLog's storage")}</div>
-       <p className="text-[11px] leading-relaxed text-white/45">{L('Trips you saved in this browser before, including older RoamLog data. Nothing else is read.')}</p>
+       <div className="flex items-center gap-2 text-[12px] font-semibold"><Icon name="shield" size={12}/>{tr("Only DerLog's storage")}</div>
+       <p className="text-[11px] leading-relaxed text-white/45">{tr('Trips you saved in this browser before, including older RoamLog data. Nothing else is read.')}</p>
      </div>
      {scanState==='idle'&&<div className="mt-4 space-y-2.5">
-       <button type="button" onClick={runScan} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Scan this phone')}</button>
-       <button type="button" onClick={()=>{setFound(null);setMessage('');setStep('preview')}} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{L('Start fresh')}</button>
-       <label className="block text-center text-[11.5px] text-white/45 py-2 underline underline-offset-4 cursor-pointer">{L('Restore a backup file instead')}<input type="file" accept=".json,application/json" className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)pickBackup(file)}}/></label>
+       <button type="button" onClick={runScan} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Scan this phone')}</button>
+       <button type="button" onClick={()=>{setFound(null);setMessage('');setStep('preview')}} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{tr('Start fresh')}</button>
+       <label className="block text-center text-[11.5px] text-white/45 py-2 underline underline-offset-4 cursor-pointer">{tr('Restore a backup file instead')}<input type="file" accept=".json,application/json" className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)pickBackup(file)}}/></label>
      </div>}
-     {scanState==='scanning'&&<div className="mt-5 flex items-center gap-2.5 text-[11.5px] text-white/55"><span className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"/>{L("Looking through DerLog's storage…")}</div>}
+     {scanState==='scanning'&&<div className="mt-5 flex items-center gap-2.5 text-[11.5px] text-white/55"><span className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"/>{tr("Looking through DerLog's storage…")}</div>}
      {scanState==='empty'&&<div className="mt-4 space-y-3">
-       <div className="rounded-[16px] border border-white/12 bg-white/[0.04] p-3.5 text-[11.5px] leading-relaxed text-white/55">{L("No earlier DerLog trips were found in this app's storage.")}</div>
-       <label className="block w-full text-center h-[46px] leading-[46px] rounded-full border border-white/20 bg-white/[0.06] text-[12.5px] font-medium cursor-pointer">{L('Choose a backup file')}<input type="file" accept=".json,application/json" className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)pickBackup(file)}}/></label>
-       <button type="button" onClick={()=>go('preview')} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Continue')}</button>
+       <div className="rounded-[16px] border border-white/12 bg-white/[0.04] p-3.5 text-[11.5px] leading-relaxed text-white/55">{tr("No earlier DerLog trips were found in this app's storage.")}</div>
+       <label className="block w-full text-center h-[46px] leading-[46px] rounded-full border border-white/20 bg-white/[0.06] text-[12.5px] font-medium cursor-pointer">{tr('Choose a backup file')}<input type="file" accept=".json,application/json" className="hidden" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)pickBackup(file)}}/></label>
+       <button type="button" onClick={()=>go('preview')} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Continue')}</button>
      </div>}
      {scanState==='found'&&found&&<div className="mt-4 space-y-3">
        <div className="rounded-[18px] border border-[#83F9FF]/30 bg-[#1B54FF]/12 p-4">
-         <div className="text-[10.5px] uppercase tracking-[0.16em] text-[#83F9FF]/80">{L('Found on this phone')}</div>
-         <div className="text-[15px] font-semibold mt-1.5">{found.trips.length} {found.trips.length===1?L('trip'):L('trips')} {L('saved')}</div>
+         <div className="text-[10.5px] uppercase tracking-[0.16em] text-[#83F9FF]/80">{tr('Found on this phone')}</div>
+         <div className="text-[15px] font-semibold mt-1.5">{found.trips.length} {found.trips.length===1?tr('trip'):tr('trips')} {tr('saved')}</div>
          <div className="text-[11px] text-white/55 mt-1">{found.trips[0].title} · {formatDateRange(found.trips[0].startDate,found.trips[0].endDate)}</div>
        </div>
-       <button type="button" onClick={()=>setStep('existing')} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Restore these trips')}</button>
-       <button type="button" onClick={()=>go('preview')} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{L('Start fresh instead')}</button>
+       <button type="button" onClick={()=>setStep('existing')} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Restore these trips')}</button>
+       <button type="button" onClick={()=>go('preview')} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{tr('Start fresh instead')}</button>
      </div>}
-     {busy==='backup'&&<p className="mt-3 text-[11.5px] text-white/55">{L('Reading that backup…')}</p>}
+     {busy==='backup'&&<p className="mt-3 text-[11.5px] text-white/55">{tr('Reading that backup…')}</p>}
      {message&&<p className="mt-3 text-[11.5px] text-[#FEB122] leading-relaxed">{message}</p>}
    </div>}
 
    {step==='preview'&&<div key="preview" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2 overflow-y-auto no-scrollbar">
      <div className="flex-1 min-h-[28px]"/>
-     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{L('A quiet home')}<br/>{L('for every trip')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{account&&account.profile&&account.profile.userName?account.profile.userName+', '+L('here is'):L('Here is')} {L('what DerLog keeps together.')}</p>
+     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{tr('A quiet home')}<br/>{tr('for every trip')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{account&&account.profile&&account.profile.userName?account.profile.userName+', '+tr('here is'):tr('Here is')} {tr('what DerLog keeps together.')}</p>
      <div className="mt-5 space-y-2.5">
        <div className="rounded-[18px] border border-white/12 bg-white/[0.05] p-3.5">
-         <div className="flex items-center gap-2"><span className="text-[#83F9FF]"><Icon name="calendar" size={14}/></span><span className="text-[12.5px] font-semibold">{L('Plan each day')}</span></div>
+         <div className="flex items-center gap-2"><span className="text-[#83F9FF]"><Icon name="calendar" size={14}/></span><span className="text-[12.5px] font-semibold">{tr('Plan each day')}</span></div>
          <div className="mt-2.5 space-y-1.5">
            <div className="flex items-center gap-2 text-[10.5px] text-white/55"><span className="w-1.5 h-1.5 rounded-full bg-[#83F9FF]"/>09:00 · Angkor Wat sunrise</div>
            <div className="flex items-center gap-2 text-[10.5px] text-white/40"><span className="w-1.5 h-1.5 rounded-full border border-[#1B54FF]"/>13:30 · Khmer Kitchen</div>
@@ -2004,60 +2004,60 @@ function OnboardingScreen({data,googleClientId,onComplete}){
          </div>
        </div>
        <div className="rounded-[18px] border border-white/12 bg-white/[0.05] p-3.5">
-         <div className="flex items-center gap-2"><span className="text-[#FEB122]"><Icon name="ticket" size={14}/></span><span className="text-[12.5px] font-semibold">{L('Scan any ticket')}</span></div>
+         <div className="flex items-center gap-2"><span className="text-[#FEB122]"><Icon name="ticket" size={14}/></span><span className="text-[12.5px] font-semibold">{tr('Scan any ticket')}</span></div>
          <div className="mt-2.5 rounded-xl bg-black/25 border border-white/10 px-3 py-2 flex items-center justify-between">
            <div><div className="text-[10.5px] font-medium">Phnom Penh → Siem Reap</div><div className="text-[10px] text-white/40">Seat 2 · EVGO Express</div></div>
            <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#FEB122]/15 text-[#FEB122]">Pass</span>
          </div>
        </div>
        <div className="rounded-[18px] border border-white/12 bg-white/[0.05] p-3.5">
-         <div className="flex items-center gap-2"><span className="text-[#83F9FF]"><Icon name="ticket" size={14}/></span><span className="text-[12.5px] font-semibold">{L('Know the budget')}</span></div>
+         <div className="flex items-center gap-2"><span className="text-[#83F9FF]"><Icon name="ticket" size={14}/></span><span className="text-[12.5px] font-semibold">{tr('Know the budget')}</span></div>
          <div className="mt-2.5 h-1.5 w-full rounded-full bg-white/10 overflow-hidden"><div className="h-full w-1/3 rounded-full bg-gradient-to-r from-[#1B54FF] to-[#83F9FF]"/></div>
          <div className="flex justify-between mt-1.5 text-[10px] text-white/45"><span>$620 spent</span><span>$2,400 limit</span></div>
        </div>
      </div>
-     <button type="button" onClick={()=>go('firstTrip')} className="mt-4 w-full h-[52px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Plan my first trip')}</button>
-     <p className="text-[10.5px] leading-relaxed text-white/30 text-center mt-3">{L('Works without internet.')} {L(account&&account.mode==='cloud'?'Changes sync when you reconnect.':'Everything stays on this phone.')}</p>
+     <button type="button" onClick={()=>go('firstTrip')} className="mt-4 w-full h-[52px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Plan my first trip')}</button>
+     <p className="text-[10.5px] leading-relaxed text-white/30 text-center mt-3">{tr('Works without internet.')} {tr(account&&account.mode==='cloud'?'Changes sync when you reconnect.':'Everything stays on this phone.')}</p>
    </div>}
 
    {step==='firstTrip'&&<div key="firstTrip" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2 overflow-y-auto no-scrollbar">
      <div className="flex-1 min-h-[28px]"/>
-     <button onClick={()=>go('preview')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{L('Back')}</button>
-     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{L('Where are you')}<br/>{L('headed?')}</h1>
-     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{L('Set up your first trip. You can add plans, bookings and photos right after.')}</p>
+     <button onClick={()=>go('preview')} className="self-start inline-flex items-center gap-1.5 text-[11.5px] text-white/60 mb-5"><Icon name="chevronRight" size={11} className="rotate-180"/>{tr('Back')}</button>
+     <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em]">{tr('Where are you')}<br/>{tr('headed?')}</h1>
+     <p className="text-[12px] leading-relaxed text-white/50 mt-2">{tr('Set up your first trip. You can add plans, bookings and photos right after.')}</p>
      <form onSubmit={createFirstTrip} className="mt-5 space-y-3">
-       <label className="block text-[11px] text-white/55">{L('Destination')}<input value={tripTitle} onChange={e=>{setTripTitle(e.target.value);setMessage('')}} placeholder="Siem Reap, Cambodia" className="wlc-input mt-1" required/></label>
+       <label className="block text-[11px] text-white/55">{tr('Destination')}<input value={tripTitle} onChange={e=>{setTripTitle(e.target.value);setMessage('')}} placeholder="Siem Reap, Cambodia" className="wlc-input mt-1" required/></label>
        <div className="grid grid-cols-2 gap-2.5">
-         <label className="block text-[11px] text-white/55">{L('Start')}<input type="date" value={tripStart} onChange={e=>{setTripStart(e.target.value);if(tripEnd&&e.target.value>tripEnd)setTripEnd(e.target.value)}} className="wlc-input mt-1 px-3" required/></label>
-         <label className="block text-[11px] text-white/55">{L('End')}<input type="date" min={tripStart} value={tripEnd} onChange={e=>setTripEnd(e.target.value)} className="wlc-input mt-1 px-3" required/></label>
+         <label className="block text-[11px] text-white/55">{tr('Start')}<input type="date" value={tripStart} onChange={e=>{setTripStart(e.target.value);if(tripEnd&&e.target.value>tripEnd)setTripEnd(e.target.value)}} className="wlc-input mt-1 px-3" required/></label>
+         <label className="block text-[11px] text-white/55">{tr('End')}<input type="date" min={tripStart} value={tripEnd} onChange={e=>setTripEnd(e.target.value)} className="wlc-input mt-1 px-3" required/></label>
        </div>
        <div className="grid grid-cols-2 gap-2.5">
-         <label className="block text-[11px] text-white/55">{L('Budget')} <span className="opacity-50">{L('(optional)')}</span><input type="number" min="0" step="0.01" value={tripBudget} onChange={e=>setTripBudget(e.target.value)} placeholder="0" className="wlc-input mt-1"/></label>
-         <label className="block text-[11px] text-white/55">{L('Currency')}<select value={currency} onChange={e=>setCurrency(e.target.value)} className="wlc-input mt-1">{CURRENCIES.map(c=><option key={c.code} value={c.code} className="text-black">{c.code} · {c.label}</option>)}</select></label>
+         <label className="block text-[11px] text-white/55">{tr('Budget')} <span className="opacity-50">{tr('(optional)')}</span><input type="number" min="0" step="0.01" value={tripBudget} onChange={e=>setTripBudget(e.target.value)} placeholder="0" className="wlc-input mt-1"/></label>
+         <label className="block text-[11px] text-white/55">{tr('Currency')}<select value={currency} onChange={e=>setCurrency(e.target.value)} className="wlc-input mt-1">{CURRENCIES.map(c=><option key={c.code} value={c.code} className="text-black">{c.code} · {c.label}</option>)}</select></label>
        </div>
        {message&&<p className="text-[11.5px] text-[#FEB122] leading-relaxed">{message}</p>}
-       <button type="submit" disabled={busy==='trip'} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold disabled:opacity-60">{busy==='trip'?L('Creating your trip…'):L('Create my trip')}</button>
+       <button type="submit" disabled={busy==='trip'} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold disabled:opacity-60">{busy==='trip'?tr('Creating your trip…'):tr('Create my trip')}</button>
      </form>
-     <p className="text-[10.5px] leading-relaxed text-white/30 mt-3">{L('You can rename it, change dates or add more trips any time.')}</p>
+     <p className="text-[10.5px] leading-relaxed text-white/30 mt-3">{tr('You can rename it, change dates or add more trips any time.')}</p>
    </div>}
 
    {step==='existing'&&found&&<div key="existing" className="wlc-fade flex-1 flex flex-col px-7 pb-7 pt-2 overflow-y-auto no-scrollbar">
      <div className="flex-1 min-h-[28px]"/>
      <div className="mt-2">
-       <p className="text-[11px] uppercase tracking-[0.28em] text-[#83F9FF]/80">{L('Welcome back')}</p>
-       <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em] mt-2">{L(found.kind==='cloud'?'Your cloud trips are here':'Your trips are back')}</h1>
-       <p className="text-[12px] leading-relaxed text-white/50 mt-2">{L('From')} {found.label}. {L('Choose one below, or open DerLog to keep planning.')}</p>
+       <p className="text-[11px] uppercase tracking-[0.28em] text-[#83F9FF]/80">{tr('Welcome back')}</p>
+       <h1 className="text-[27px] leading-tight font-semibold tracking-[-0.03em] mt-2">{tr(found.kind==='cloud'?'Your cloud trips are here':'Your trips are back')}</h1>
+       <p className="text-[12px] leading-relaxed text-white/50 mt-2">{tr('From')} {found.label}. {tr('Choose one below, or open DerLog to keep planning.')}</p>
      </div>
      <div className="mt-5 space-y-2">
        {(found.trips||[]).slice(0,4).map(trip=><div key={trip.id} className="rounded-[16px] border border-white/12 bg-white/[0.05] px-3.5 py-3">
          <div className="text-[12.5px] font-semibold">{trip.title}</div>
-         <div className="text-[10.5px] text-white/45 mt-0.5">{formatDateRange(trip.startDate,trip.endDate)} · {(trip.items||[]).length} {L('stops')}</div>
+         <div className="text-[10.5px] text-white/45 mt-0.5">{formatDateRange(trip.startDate,trip.endDate)} · {(trip.items||[]).length} {tr('stops')}</div>
        </div>)}
-       {(found.trips||[]).length>4&&<div className="text-[11px] text-white/40 px-1">{L('and')} {found.trips.length-4} {L('more')}</div>}
+       {(found.trips||[]).length>4&&<div className="text-[11px] text-white/40 px-1">{tr('and')} {found.trips.length-4} {tr('more')}</div>}
      </div>
      <div className="mt-5 space-y-2.5">
-       <button type="button" onClick={openFound} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{L('Open my trips')}</button>
-       <button type="button" onClick={()=>go('firstTrip')} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{L('Plan a new trip')}</button>
+       <button type="button" onClick={openFound} className="w-full h-[50px] rounded-full bg-white text-[#040811] text-[13px] font-semibold">{tr('Open my trips')}</button>
+       <button type="button" onClick={()=>go('firstTrip')} className="w-full h-[46px] rounded-full border border-white/20 bg-white/[0.06] text-white text-[12.5px] font-medium">{tr('Plan a new trip')}</button>
      </div>
    </div>}
   </div>
@@ -2129,9 +2129,9 @@ const KM_TEXT={
  'Restoring adds the file\'s trips and saved places; anything already on this device is kept. Export first if you want a second copy.':'ការស្តារបន្ថែមដំណើរ និងកន្លែងដែលបានរក្សាទុកពីឯកសារ។ អ្វីដែលមានលើឧបករណ៍នេះរួចហើយត្រូវរក្សាទុក។ នាំចេញមុនបើចង់បានច្បាប់ទីពីរ។',
  'Stuck on a scan or a booking? Send a note from Feedback and it will be looked at.':'ជាប់បញ្ហាការស្កេន ឬការកក់? ផ្ញើសារពីមតិយោបល់ ហើយវានឹងត្រូវពិនិត្យ។','Feedback sending is not connected yet. This space is reserved for it.':'ការផ្ញើមតិយោបល់មិនទាន់ភ្ជាប់នៅឡើយទេ។ កន្លែងនេះបម្រុងទុកសម្រាប់វា។','Saved cards will appear here in a future update.':'កាតដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះក្នុងការអាប់ដេតខាងមុខ។','Check a price before you pay — no need to open a browser.':'ពិនិត្យតម្លៃមុននឹងបង់ — មិនចាំបាច់បើកកម្មវិធីរុករកទេ។'
 };
-/* Every component reads the current language through L(); the app sets it while rendering. */
+/* Every component reads the current language through tr(); the app sets it while rendering. */
 let UI_LANG='en';
-function L(text){return UI_LANG==='km'?(KM_TEXT[text]||text):text}
+function tr(text){return UI_LANG==='km'?(KM_TEXT[text]||text):text}
 const APP_VERSION='1.23.0';
 const BUILD_NUMBER='2026.11.19';
 const DEFAULT_CURRENCY='USD';
@@ -2239,8 +2239,8 @@ function DialogHost(){
   <div className="modal-bg w-full max-w-[300px] border rounded-[24px] p-5 space-y-3">
    <h3 className="text-sm font-semibold">{dlg.title}</h3>
    <p className="text-[12px] leading-relaxed subtext-clr">{dlg.message}</p>
-   {dlg.kind==='choose'?<div className="space-y-1.5 pt-1 max-h-64 overflow-y-auto no-scrollbar">{(dlg.options||[]).map(option=><button key={option.value} onClick={()=>close(option.value)} className="w-full text-left glass-pill rounded-xl px-3 py-2.5 text-[12px] font-medium">{option.label}</button>)}<button onClick={()=>close(null)} className="w-full text-[11.5px] subtext-clr py-2">{L('Cancel')}</button></div>
-   :<div className="flex gap-2 pt-1"><button onClick={()=>close(false)} className="flex-1 glass-pill rounded-full py-2.5 text-[12px] font-medium">{L('Cancel')}</button><button onClick={()=>close(true)} className="flex-1 bg-[#1B54FF] text-white rounded-full py-2.5 text-[12px] font-semibold">{dlg.kind==='confirm'?'Continue':'OK'}</button></div>}
+   {dlg.kind==='choose'?<div className="space-y-1.5 pt-1 max-h-64 overflow-y-auto no-scrollbar">{(dlg.options||[]).map(option=><button key={option.value} onClick={()=>close(option.value)} className="w-full text-left glass-pill rounded-xl px-3 py-2.5 text-[12px] font-medium">{option.label}</button>)}<button onClick={()=>close(null)} className="w-full text-[11.5px] subtext-clr py-2">{tr('Cancel')}</button></div>
+   :<div className="flex gap-2 pt-1"><button onClick={()=>close(false)} className="flex-1 glass-pill rounded-full py-2.5 text-[12px] font-medium">{tr('Cancel')}</button><button onClick={()=>close(true)} className="flex-1 bg-[#1B54FF] text-white rounded-full py-2.5 text-[12px] font-semibold">{dlg.kind==='confirm'?'Continue':'OK'}</button></div>}
   </div>
  </div>;
 }
@@ -2781,8 +2781,8 @@ function App(){
   if(!date)return [];
   if(i.category==='Stay'&&i.checkIn&&i.checkOut&&i.checkOut!==i.checkIn){
     return [
-      {...i,_date:i.checkIn,activityLabel:`${L('Check-in')} ${to12Hour(i.checkInTime||'14:00')}`,time:i.checkInTime||'14:00'},
-      {...i,id:`${i.id}-checkout`,_date:i.checkOut,activityLabel:`${L('Check-out')} ${to12Hour(i.checkOutTime||'12:00')}`,time:i.checkOutTime||'12:00'}
+      {...i,_date:i.checkIn,activityLabel:`${tr('Check-in')} ${to12Hour(i.checkInTime||'14:00')}`,time:i.checkInTime||'14:00'},
+      {...i,id:`${i.id}-checkout`,_date:i.checkOut,activityLabel:`${tr('Check-out')} ${to12Hour(i.checkOutTime||'12:00')}`,time:i.checkOutTime||'12:00'}
     ];
   }
   return [{...i,_date:date}];
@@ -2793,7 +2793,7 @@ function App(){
  const runningActivity=activityDate===localToday?timedActivity.find(x=>currentMinutes>=x.start&&currentMinutes<x.start+x.duration)||null:null;
  const nextActivity=activityDate===localToday?timedActivity.filter(x=>x.start>currentMinutes).sort((a,b)=>a.start-b.start)[0]||null:null;
  const focusActivityId=runningActivity?runningActivity.id:(nextActivity?nextActivity.id:null);
- const focusActivityLabel=L(runningActivity?'Now':'Next');
+ const focusActivityLabel=tr(runningActivity?'Now':'Next');
  const budgetPercent=activeTrip.budget>0?Math.min(100,Math.max(0,Math.round(totalSpent/activeTrip.budget*100))):0;
  const stayNights=stayCheckIn&&stayCheckOut?Math.max(0,daysBetween(stayCheckIn,stayCheckOut)):0;
 
@@ -2935,13 +2935,13 @@ function App(){
   <div className="px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
   <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-24 pt-2">
    {activeTab==='home'&&<div className="space-y-4">
-    <div className="flex justify-between items-start pt-2 gap-3"><div className="home-heading min-w-0"><button onClick={()=>setShowTripSwitcher(true)} className="glass-pill inline-flex self-start items-center gap-2 px-3 py-1 rounded-full text-xs font-medium accent-txt mb-1">{L('Trips')} <span className="opacity-60">▾</span></button><h1 className="text-[22px] font-semibold tracking-tight"><span className="khmer-greeting">តោះដើរលេង</span>, {data.userName}?</h1><p className="trip-location subtext-clr">{activeTrip.location||activeTrip.title}</p><p className="trip-dates subtext-clr">{formatDateRange(activeTrip.startDate,activeTrip.endDate)} • {activeTrip.daysCount} {L('days')} · {activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} {L('nights')}</p></div><div className="flex items-center gap-2 shrink-0"><button onClick={()=>setShowSearch(true)} aria-label="Search DerLog" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="search" size={17}/></button><button onClick={()=>setShowTripSwitcher(true)} aria-label="Trips" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="ticket" size={18}/></button></div></div>
-    <div className="relative w-full h-48 rounded-[24px] overflow-hidden border border-white/15 bg-[#07101f]">{activeTrip.slideshow.length>0?<><img key={'blur-'+slideIndex} src={activeTrip.slideshow[slideIndex%activeTrip.slideshow.length]} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50 pointer-events-none"/><img key={activeTrip.id+'-'+slideIndex} src={activeTrip.slideshow[slideIndex%activeTrip.slideshow.length]} alt={activeTrip.title+' destination photo'} className="absolute inset-0 w-full h-full object-contain slide-anim" onError={e=>{const bad=e.currentTarget.src;setData(d=>({...d,trips:d.trips.map(t=>t.id===activeTrip.id?{...t,slideshow:t.slideshow.filter(url=>url!==bad)}:t)}))}}/></>:<div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#17316e] to-[#07101f]"><div className="text-center px-4"><span className="text-xs text-white/70 block">{L('No destination photos found yet.')}</span></div></div>}</div>
-    <div className="grid grid-cols-2 gap-3"><div onClick={()=>setActiveTab('plan')} className="glass-card rounded-[20px] px-4 py-3 cursor-pointer"><div className="text-lg leading-tight font-medium accent-txt">{activeTrip.items.length}</div><div className="text-[11.5px] subtext-clr mt-1">{L('Places Planned')}</div></div><div onClick={()=>setActiveTab('destinations')} className="glass-card rounded-[20px] px-4 py-3 cursor-pointer"><div className="text-lg leading-tight font-medium accent-txt">{destinationPlaces.length||'—'}</div><div className="text-[11.5px] subtext-clr mt-1">{L('Destinations')}</div><div className="text-[10.5px] subtext-clr mt-0.5">{L('Explore')} {activeTrip.title}</div></div><div onClick={()=>{setEditBudgetVal(activeTrip.budget);setShowBudgetModal(true)}} className="glass-card rounded-[20px] px-4 py-3 flex justify-between items-center cursor-pointer col-span-2"><div><div className="text-xl font-medium text-[#FEB122]">{money(totalSpent,activeTrip)} / {money(activeTrip.budget,activeTrip,true)}</div><div className="text-xs subtext-clr">{L('Budget')}</div></div><span className="text-xs opacity-40">{L('Edit')} →</span></div></div>
+    <div className="flex justify-between items-start pt-2 gap-3"><div className="home-heading min-w-0"><button onClick={()=>setShowTripSwitcher(true)} className="glass-pill inline-flex self-start items-center gap-2 px-3 py-1 rounded-full text-xs font-medium accent-txt mb-1">{tr('Trips')} <span className="opacity-60">▾</span></button><h1 className="text-[22px] font-semibold tracking-tight"><span className="khmer-greeting">តោះដើរលេង</span>, {data.userName}?</h1><p className="trip-location subtext-clr">{activeTrip.location||activeTrip.title}</p><p className="trip-dates subtext-clr">{formatDateRange(activeTrip.startDate,activeTrip.endDate)} • {activeTrip.daysCount} {tr('days')} · {activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} {tr('nights')}</p></div><div className="flex items-center gap-2 shrink-0"><button onClick={()=>setShowSearch(true)} aria-label="Search DerLog" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="search" size={17}/></button><button onClick={()=>setShowTripSwitcher(true)} aria-label="Trips" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="ticket" size={18}/></button></div></div>
+    <div className="relative w-full h-48 rounded-[24px] overflow-hidden border border-white/15 bg-[#07101f]">{activeTrip.slideshow.length>0?<><img key={'blur-'+slideIndex} src={activeTrip.slideshow[slideIndex%activeTrip.slideshow.length]} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50 pointer-events-none"/><img key={activeTrip.id+'-'+slideIndex} src={activeTrip.slideshow[slideIndex%activeTrip.slideshow.length]} alt={activeTrip.title+' destination photo'} className="absolute inset-0 w-full h-full object-contain slide-anim" onError={e=>{const bad=e.currentTarget.src;setData(d=>({...d,trips:d.trips.map(t=>t.id===activeTrip.id?{...t,slideshow:t.slideshow.filter(url=>url!==bad)}:t)}))}}/></>:<div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#17316e] to-[#07101f]"><div className="text-center px-4"><span className="text-xs text-white/70 block">{tr('No destination photos found yet.')}</span></div></div>}</div>
+    <div className="grid grid-cols-2 gap-3"><div onClick={()=>setActiveTab('plan')} className="glass-card rounded-[20px] px-4 py-3 cursor-pointer"><div className="text-lg leading-tight font-medium accent-txt">{activeTrip.items.length}</div><div className="text-[11.5px] subtext-clr mt-1">{tr('Places Planned')}</div></div><div onClick={()=>setActiveTab('destinations')} className="glass-card rounded-[20px] px-4 py-3 cursor-pointer"><div className="text-lg leading-tight font-medium accent-txt">{destinationPlaces.length||'—'}</div><div className="text-[11.5px] subtext-clr mt-1">{tr('Destinations')}</div><div className="text-[10.5px] subtext-clr mt-0.5">{tr('Explore')} {activeTrip.title}</div></div><div onClick={()=>{setEditBudgetVal(activeTrip.budget);setShowBudgetModal(true)}} className="glass-card rounded-[20px] px-4 py-3 flex justify-between items-center cursor-pointer col-span-2"><div><div className="text-xl font-medium text-[#FEB122]">{money(totalSpent,activeTrip)} / {money(activeTrip.budget,activeTrip,true)}</div><div className="text-xs subtext-clr">{tr('Budget')}</div></div><span className="text-xs opacity-40">{tr('Edit')} →</span></div></div>
     <div>
-     <div className="flex justify-between items-center mb-2"><h2 className="text-xs font-medium opacity-80 uppercase tracking-wider">{L('Activity')}</h2><button onClick={()=>setActiveTab('plan')} className="text-xs font-medium accent-txt">{L('See planning')}</button></div>
-     <div className="day-tabs gap-2 mb-3">{tripDates.map((d,i)=><button key={d} type="button" onClick={()=>setActivityDayChoice(d)} aria-pressed={d===activityDate} className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap ${d===activityDate?'bg-[#1B54FF] text-white':'glass-pill opacity-75'}`}>{L('Day')} {i+1}</button>)}</div>
-     <div className="flex items-baseline justify-between gap-2 mb-3"><div className="text-xs font-semibold">{activityDate===localToday?L('Today'):shortWeekday(activityDate||localToday)} — {formatDateStr(activityDate||localToday)}</div><span className="text-[10px] subtext-clr">{activityDayItems.length} {activityDayItems.length===1?L('stop'):L('stops')}</span></div>
+     <div className="flex justify-between items-center mb-2"><h2 className="text-xs font-medium opacity-80 uppercase tracking-wider">{tr('Activity')}</h2><button onClick={()=>setActiveTab('plan')} className="text-xs font-medium accent-txt">{tr('See planning')}</button></div>
+     <div className="day-tabs gap-2 mb-3">{tripDates.map((d,i)=><button key={d} type="button" onClick={()=>setActivityDayChoice(d)} aria-pressed={d===activityDate} className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap ${d===activityDate?'bg-[#1B54FF] text-white':'glass-pill opacity-75'}`}>{tr('Day')} {i+1}</button>)}</div>
+     <div className="flex items-baseline justify-between gap-2 mb-3"><div className="text-xs font-semibold">{activityDate===localToday?tr('Today'):shortWeekday(activityDate||localToday)} — {formatDateStr(activityDate||localToday)}</div><span className="text-[10px] subtext-clr">{activityDayItems.length} {activityDayItems.length===1?tr('stop'):tr('stops')}</span></div>
      {activityDayItems.length? <div>
        {activityDayItems.map((item,idx)=>{
          const isFocus=focusActivityId===item.id;
@@ -2959,25 +2959,25 @@ function App(){
            </div>
          </div>
        })}
-     </div>:<div className="glass-card rounded-[18px] p-4 text-xs subtext-clr">{L('This trip is ready — add your first plan and the timeline starts here.')}</div>}
+     </div>:<div className="glass-card rounded-[18px] p-4 text-xs subtext-clr">{tr('This trip is ready — add your first plan and the timeline starts here.')}</div>}
     </div>
    </div>}
-   {activeTab==='plan'&&!showFullMap&&!showAddModal&&<div className="space-y-3.5"><div className="flex justify-between items-end gap-2"><div className="min-w-0"><h1 className="app-section-title">{L('Planning')}</h1><p className="text-xs subtext-clr">{activeTrip.title} • {filteredItems.length} {L('stops')}</p><button type="button" onClick={()=>{setEditTripStart(activeTrip.startDate||'');setEditTripEnd(activeTrip.endDate||'');setShowTripDatesEditor(true)}} className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] accent-txt"><Icon name="calendar" size={11}/>{formatDateRange(activeTrip.startDate,activeTrip.endDate)} <Icon name="edit" size={10}/></button></div><div className="flex items-center gap-1.5 shrink-0"><button onClick={()=>setShowTripEditor(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="edit" size={11}/>{L('Trip')}</button><button onClick={()=>setShowBookings(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="ticket" size={11}/>{L('Booking')}{bookingItems.length?` · ${bookingItems.length}`:''}</button></div></div>
-    <div className="day-tabs gap-2 py-2">{dayChips.map(c=><button key={c} onClick={()=>setSelectedDayFilter(c)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${selectedDayFilter===c?'bg-[#1B54FF] text-white':'glass-pill opacity-75'}`}>{c==='All'?L('All'):L('Day')+' '+c.split(' ')[1]}</button>)}</div>
-    {!showTripSwitcher&&!showTripEditor&&!showBudgetModal&&!showTripDatesEditor&&!previewAttachment&&!selectedDestinationDetail&&!showBookings&&!bookingEditor&&<div onClick={()=>setShowFullMap(true)} className="cursor-pointer"><InteractiveMap items={filteredItems} center={activeTrip.center} heightClass="h-40"/><div className="text-[11px] subtext-clr text-center mt-1">{L('Tap map to open full view & search places')}</div></div>}
+   {activeTab==='plan'&&!showFullMap&&!showAddModal&&<div className="space-y-3.5"><div className="flex justify-between items-end gap-2"><div className="min-w-0"><h1 className="app-section-title">{tr('Planning')}</h1><p className="text-xs subtext-clr">{activeTrip.title} • {filteredItems.length} {tr('stops')}</p><button type="button" onClick={()=>{setEditTripStart(activeTrip.startDate||'');setEditTripEnd(activeTrip.endDate||'');setShowTripDatesEditor(true)}} className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] accent-txt"><Icon name="calendar" size={11}/>{formatDateRange(activeTrip.startDate,activeTrip.endDate)} <Icon name="edit" size={10}/></button></div><div className="flex items-center gap-1.5 shrink-0"><button onClick={()=>setShowTripEditor(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="edit" size={11}/>{tr('Trip')}</button><button onClick={()=>setShowBookings(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="ticket" size={11}/>{tr('Booking')}{bookingItems.length?` · ${bookingItems.length}`:''}</button></div></div>
+    <div className="day-tabs gap-2 py-2">{dayChips.map(c=><button key={c} onClick={()=>setSelectedDayFilter(c)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${selectedDayFilter===c?'bg-[#1B54FF] text-white':'glass-pill opacity-75'}`}>{c==='All'?tr('All'):tr('Day')+' '+c.split(' ')[1]}</button>)}</div>
+    {!showTripSwitcher&&!showTripEditor&&!showBudgetModal&&!showTripDatesEditor&&!previewAttachment&&!selectedDestinationDetail&&!showBookings&&!bookingEditor&&<div onClick={()=>setShowFullMap(true)} className="cursor-pointer"><InteractiveMap items={filteredItems} center={activeTrip.center} heightClass="h-40"/><div className="text-[11px] subtext-clr text-center mt-1">{tr('Tap map to open full view & search places')}</div></div>}
     <div className="flex items-center justify-between gap-2 pt-0.5">
-      <span className="text-[11px] subtext-clr">{L('Sort by')}</span>
-      <DropSelect value={planSort} onChange={setPlanSort} options={PLAN_SORT_OPTIONS.map(o=>({...o,label:L(o.label)}))} ariaLabel="Sort plan" className="w-[158px]" buttonClass="glass-pill rounded-full px-3 py-1.5 text-[11.5px] accent-txt" align="right"/>
+      <span className="text-[11px] subtext-clr">{tr('Sort by')}</span>
+      <DropSelect value={planSort} onChange={setPlanSort} options={PLAN_SORT_OPTIONS.map(o=>({...o,label:tr(o.label)}))} ariaLabel="Sort plan" className="w-[158px]" buttonClass="glass-pill rounded-full px-3 py-1.5 text-[11.5px] accent-txt" align="right"/>
     </div>
-    <div className="space-y-2.5 pt-1">{filteredItems.length===0?<div className="glass-card rounded-[22px] p-6 text-center"><p className="text-xs font-medium subtext-clr">{L('No stops found for this filter.')}</p></div>:filteredItems.map(i=><div key={i.id} className="glass-card rounded-[20px] p-3.5 space-y-2"><div className="flex justify-between items-start"><div className="min-w-0"><div className="flex items-center gap-2 mb-0.5"><span className="text-[11px] font-medium accent-txt">{L(i.category)}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 opacity-80">{i.day}</span>{i.booking&&<span className="text-[10px] accent-txt inline-flex items-center gap-1"><Icon name="ticket" size={9}/>{L('Pass')}</span>}</div><div className="text-sm font-medium leading-snug">{i.title}</div><div className="text-[11px] subtext-clr mt-0.5">{i.category==='Rental'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)}${i.rentalStartTime?` ${to12Hour(i.rentalStartTime)}`:''} → ${formatDateStr(i.checkOut)}${i.rentalEndTime?` ${to12Hour(i.rentalEndTime)}`:''}`:i.category==='Stay'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)} ${to12Hour(i.checkInTime||'14:00')} → ${formatDateStr(i.checkOut)} ${to12Hour(i.checkOutTime||'12:00')} • ${i.nights||0} ${i.nights===1?L('night'):L('nights')}`:i.category==='Expense'?formatDateStr(i.date||''):`${i.time}${i.notes?` • ${i.notes}`:''}`}</div></div><div className="flex flex-col items-end shrink-0"><span className="text-xs font-medium text-[#FEB122]">{money(i.cost,activeTrip)}</span>{i.costOriginal&&i.costOriginal.currency&&i.costOriginal.currency!==currencyOf(activeTrip).code?<span className="text-[9.5px] subtext-clr mt-0.5 whitespace-nowrap">from {currencyOf({currency:i.costOriginal.currency}).symbol}{Number(i.costOriginal.amount||0).toLocaleString('en-US')} {i.costOriginal.currency}</span>:null}<div className="flex items-center gap-2 mt-2"><button onClick={()=>handleMoveItem(i.id)} className="text-[10px] opacity-50 hover:text-[#1B54FF]">{L('Move')}</button><span className="text-[10px] opacity-25">·</span><button onClick={()=>handleDeleteItem(i.id)} className="text-[10px] opacity-50 hover:text-red-400">{L('Remove')}</button></div></div></div>{i.attachment&&i.attachment.value&&<div className="pt-2 border-t border-white/10 flex items-center justify-between"><button onClick={()=>setPreviewAttachment(i.attachment)} className="inline-flex items-center gap-1.5 bg-[#1B54FF]/20 border border-[#1B54FF]/40 accent-txt text-[11.5px] px-3 py-1 rounded-full"><Icon name="image" size={12}/><span className="font-medium">{i.attachment.label||'Photo'}</span></button><span className="text-[10px] opacity-40 uppercase tracking-widest">Photo</span></div>}</div>)}</div>
+    <div className="space-y-2.5 pt-1">{filteredItems.length===0?<div className="glass-card rounded-[22px] p-6 text-center"><p className="text-xs font-medium subtext-clr">{tr('No stops found for this filter.')}</p></div>:filteredItems.map(i=><div key={i.id} className="glass-card rounded-[20px] p-3.5 space-y-2"><div className="flex justify-between items-start"><div className="min-w-0"><div className="flex items-center gap-2 mb-0.5"><span className="text-[11px] font-medium accent-txt">{tr(i.category)}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 opacity-80">{i.day}</span>{i.booking&&<span className="text-[10px] accent-txt inline-flex items-center gap-1"><Icon name="ticket" size={9}/>{tr('Pass')}</span>}</div><div className="text-sm font-medium leading-snug">{i.title}</div><div className="text-[11px] subtext-clr mt-0.5">{i.category==='Rental'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)}${i.rentalStartTime?` ${to12Hour(i.rentalStartTime)}`:''} → ${formatDateStr(i.checkOut)}${i.rentalEndTime?` ${to12Hour(i.rentalEndTime)}`:''}`:i.category==='Stay'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)} ${to12Hour(i.checkInTime||'14:00')} → ${formatDateStr(i.checkOut)} ${to12Hour(i.checkOutTime||'12:00')} • ${i.nights||0} ${i.nights===1?tr('night'):tr('nights')}`:i.category==='Expense'?formatDateStr(i.date||''):`${i.time}${i.notes?` • ${i.notes}`:''}`}</div></div><div className="flex flex-col items-end shrink-0"><span className="text-xs font-medium text-[#FEB122]">{money(i.cost,activeTrip)}</span>{i.costOriginal&&i.costOriginal.currency&&i.costOriginal.currency!==currencyOf(activeTrip).code?<span className="text-[9.5px] subtext-clr mt-0.5 whitespace-nowrap">from {currencyOf({currency:i.costOriginal.currency}).symbol}{Number(i.costOriginal.amount||0).toLocaleString('en-US')} {i.costOriginal.currency}</span>:null}<div className="flex items-center gap-2 mt-2"><button onClick={()=>handleMoveItem(i.id)} className="text-[10px] opacity-50 hover:text-[#1B54FF]">{tr('Move')}</button><span className="text-[10px] opacity-25">·</span><button onClick={()=>handleDeleteItem(i.id)} className="text-[10px] opacity-50 hover:text-red-400">{tr('Remove')}</button></div></div></div>{i.attachment&&i.attachment.value&&<div className="pt-2 border-t border-white/10 flex items-center justify-between"><button onClick={()=>setPreviewAttachment(i.attachment)} className="inline-flex items-center gap-1.5 bg-[#1B54FF]/20 border border-[#1B54FF]/40 accent-txt text-[11.5px] px-3 py-1 rounded-full"><Icon name="image" size={12}/><span className="font-medium">{i.attachment.label||'Photo'}</span></button><span className="text-[10px] opacity-40 uppercase tracking-widest">Photo</span></div>}</div>)}</div>
    </div>}
-   {activeTab==='budget'&&<div className="space-y-4"><div className="pt-1"><h1 className="app-section-title">{L('Budget & Expenses')}</h1><p className="text-xs subtext-clr">{activeTrip.title}</p></div><div className="glass-card rounded-[24px] p-4 space-y-4"><div className="grid grid-cols-3 gap-2"><div><div className="text-xl font-medium">{activeTrip.daysCount}</div><div className="text-[11px] subtext-clr">{activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} nights</div></div><div><div className="text-xl font-medium accent-txt">{activeTrip.items.length}</div><div className="text-[11px] subtext-clr">{L('Stops')}</div></div><div><div className="text-xl font-medium text-[#FEB122]">{money(totalSpent,activeTrip)}</div><div className="text-[11px] subtext-clr">{L('Spent')}</div></div></div><div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-[#1B54FF] via-[#83F9FF] to-[#FEB122] rounded-full" style={{width:`${budgetPercent}%`}}/></div><div onClick={()=>{setEditBudgetVal(activeTrip.budget);setShowBudgetModal(true)}} className="flex justify-between items-center text-xs opacity-90 mt-2 cursor-pointer"><span className="font-medium subtext-clr">{L('Used')}: {budgetPercent}%</span><span className="font-medium bg-white/5 border border-white/10 px-3 py-1 rounded-full inline-flex items-center gap-1.5"><Icon name="edit" size={11}/> {money(activeTrip.budget,activeTrip,true)} {L('Total Limit')}</span></div></div></div>
-    <div className="space-y-2"><h2 className="text-xs font-medium opacity-70 uppercase tracking-wider">{L('Category Breakdown')}</h2>{['Transport','Stay','Rental','Food','Explore','Expense'].map(cat=>{const group=activeTrip.items.filter(i=>i.category===cat);const sum=group.reduce((s,i)=>s+(Number(i.cost)||0),0);return <button type="button" key={cat} onClick={()=>setBudgetCategory(cat)} className="glass-card rounded-[18px] p-3.5 w-full flex justify-between items-center gap-2 text-left"><div className="min-w-0"><div className="text-sm font-medium">{L(cat)}</div><div className="text-[11px] subtext-clr">{group.length} {group.length===1?'item':'items'}</div></div><div className="flex items-center gap-1.5 shrink-0"><div className="text-sm font-medium text-[#FEB122]">{money(sum,activeTrip)}</div><span className="opacity-30"><Icon name="chevronRight" size={12}/></span></div></button>})}</div>
+   {activeTab==='budget'&&<div className="space-y-4"><div className="pt-1"><h1 className="app-section-title">{tr('Budget & Expenses')}</h1><p className="text-xs subtext-clr">{activeTrip.title}</p></div><div className="glass-card rounded-[24px] p-4 space-y-4"><div className="grid grid-cols-3 gap-2"><div><div className="text-xl font-medium">{activeTrip.daysCount}</div><div className="text-[11px] subtext-clr">{activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} nights</div></div><div><div className="text-xl font-medium accent-txt">{activeTrip.items.length}</div><div className="text-[11px] subtext-clr">{tr('Stops')}</div></div><div><div className="text-xl font-medium text-[#FEB122]">{money(totalSpent,activeTrip)}</div><div className="text-[11px] subtext-clr">{tr('Spent')}</div></div></div><div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-[#1B54FF] via-[#83F9FF] to-[#FEB122] rounded-full" style={{width:`${budgetPercent}%`}}/></div><div onClick={()=>{setEditBudgetVal(activeTrip.budget);setShowBudgetModal(true)}} className="flex justify-between items-center text-xs opacity-90 mt-2 cursor-pointer"><span className="font-medium subtext-clr">{tr('Used')}: {budgetPercent}%</span><span className="font-medium bg-white/5 border border-white/10 px-3 py-1 rounded-full inline-flex items-center gap-1.5"><Icon name="edit" size={11}/> {money(activeTrip.budget,activeTrip,true)} {tr('Total Limit')}</span></div></div></div>
+    <div className="space-y-2"><h2 className="text-xs font-medium opacity-70 uppercase tracking-wider">{tr('Category Breakdown')}</h2>{['Transport','Stay','Rental','Food','Explore','Expense'].map(cat=>{const group=activeTrip.items.filter(i=>i.category===cat);const sum=group.reduce((s,i)=>s+(Number(i.cost)||0),0);return <button type="button" key={cat} onClick={()=>setBudgetCategory(cat)} className="glass-card rounded-[18px] p-3.5 w-full flex justify-between items-center gap-2 text-left"><div className="min-w-0"><div className="text-sm font-medium">{tr(cat)}</div><div className="text-[11px] subtext-clr">{group.length} {group.length===1?'item':'items'}</div></div><div className="flex items-center gap-1.5 shrink-0"><div className="text-sm font-medium text-[#FEB122]">{money(sum,activeTrip)}</div><span className="opacity-30"><Icon name="chevronRight" size={12}/></span></div></button>})}</div>
    </div>}
    {activeTab==='destinations'&&<div className="space-y-3">
-    <div><h1 className="app-section-title">{L('Destinations')}</h1><p className="text-xs subtext-clr mt-1">{L('Good places around')} {activeTrip.location||activeTrip.title}</p></div>
-    {destinationLoading&&<div className="glass-card rounded-[20px] p-3.5 flex items-center gap-2.5 text-[11.5px] subtext-clr"><span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"/>{L('Ranking nearby places by rating and popularity…')}</div>}
-    {!destinationLoading&&destinationError&&<div className="glass-card rounded-[20px] p-4 text-xs subtext-clr">{destinationError}<div className="flex items-center gap-3 mt-2"><button onClick={()=>setDestinationRetry(v=>v+1)} className="accent-txt">{L('Try again')}</button><span className="opacity-40">·</span><button onClick={()=>setActiveTab('plan')} className="accent-txt">{L('Check your trip map')}</button></div></div>}
+    <div><h1 className="app-section-title">{tr('Destinations')}</h1><p className="text-xs subtext-clr mt-1">{tr('Good places around')} {activeTrip.location||activeTrip.title}</p></div>
+    {destinationLoading&&<div className="glass-card rounded-[20px] p-3.5 flex items-center gap-2.5 text-[11.5px] subtext-clr"><span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"/>{tr('Ranking nearby places by rating and popularity…')}</div>}
+    {!destinationLoading&&destinationError&&<div className="glass-card rounded-[20px] p-4 text-xs subtext-clr">{destinationError}<div className="flex items-center gap-3 mt-2"><button onClick={()=>setDestinationRetry(v=>v+1)} className="accent-txt">{tr('Try again')}</button><span className="opacity-40">·</span><button onClick={()=>setActiveTab('plan')} className="accent-txt">{tr('Check your trip map')}</button></div></div>}
     {!destinationLoading&&!destinationError&&<div className="text-[10px] subtext-clr leading-relaxed">{destinationSource}</div>}
     <div className="space-y-2">{destinationPlaces.map(place=><div key={place.id} role="button" tabIndex="0" onClick={()=>setSelectedDestinationDetail(place)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSelectedDestinationDetail(place)}}} className="glass-card rounded-[18px] p-2 flex items-center gap-2.5 cursor-pointer">
       <div className="w-[56px] h-[56px] rounded-[13px] overflow-hidden shrink-0 bg-gradient-to-br from-[#17316e] to-[#07101f] flex items-center justify-center text-white/70">{place.imageUrl&&/^https?:\/\//i.test(place.imageUrl)?<img src={place.imageUrl} alt={place.title} className="w-full h-full object-cover" loading="lazy" onError={e=>{e.currentTarget.style.display='none'}}/>:<Icon name="mapPin" size={20}/>}</div>
@@ -2985,7 +2985,7 @@ function App(){
         <div className="text-[12.5px] font-semibold leading-tight truncate">{place.title}</div>
         <div className="text-[10.5px] subtext-clr mt-0.5 truncate">{place.kind}{place.address?` · ${shortAddress(place.address)}`:''}</div>
         <div className="flex items-center gap-1.5 mt-1 min-w-0">
-          <span title={L('Interest score from public popularity')} className="text-[10px] px-1.5 py-[1px] rounded-full bg-[#FEB122]/15 text-[#FEB122] font-semibold inline-flex items-center gap-0.5 shrink-0"><Icon name="star" size={8}/>{Number(place.score||0).toFixed(1)}</span>
+          <span title={tr('Interest score from public popularity')} className="text-[10px] px-1.5 py-[1px] rounded-full bg-[#FEB122]/15 text-[#FEB122] font-semibold inline-flex items-center gap-0.5 shrink-0"><Icon name="star" size={8}/>{Number(place.score||0).toFixed(1)}</span>
           <span className="text-[10px] subtext-clr truncate">{popularityLabel(place.popularity)}</span>
         </div>
       </div>
@@ -2993,7 +2993,7 @@ function App(){
      </div>)}</div>
    </div>}
    {activeTab==='profile'&&<div className="space-y-4 pt-1">
-    <h1 className="app-section-title pb-1">{L('Profile')}</h1>
+    <h1 className="app-section-title pb-1">{tr('Profile')}</h1>
     {profilePage==='main'&&<div className="space-y-3">
       <button onClick={()=>setProfilePage('profile')} className="glass-card w-full rounded-[20px] px-3.5 py-3 flex items-center gap-3 text-left">
         <Avatar src={data.userProfilePic} name={data.userName} email={data.userEmail} size={44} className="shrink-0"/>
@@ -3007,9 +3007,9 @@ function App(){
       <div className="profile-trips-card rounded-[22px] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="ptc-label text-[10.5px] uppercase tracking-[0.16em]">{L('Trips completed')}</div>
+            <div className="ptc-label text-[10.5px] uppercase tracking-[0.16em]">{tr('Trips completed')}</div>
             <div className="text-[34px] leading-none font-semibold mt-1.5 tabular-nums">{completedTrips}</div>
-            <div className="ptc-sub text-[11.5px] mt-1.5">{L(completedTrips===1?'Journey wrapped up':'Journeys wrapped up')}</div>
+            <div className="ptc-sub text-[11.5px] mt-1.5">{tr(completedTrips===1?'Journey wrapped up':'Journeys wrapped up')}</div>
           </div>
           <span className="ptc-icon w-9 h-9 rounded-full flex items-center justify-center shrink-0"><Icon name="ticket" size={15}/></span>
         </div>
@@ -3019,7 +3019,7 @@ function App(){
         {[{id:'settings',title:'Settings',icon:'gear'},{id:'backup',title:'Backup & Restore',icon:'download'},{id:'convert',title:'Currency Converter',icon:'refresh'},{id:'cards',title:'Bank Cards',icon:'card'},{id:'privacy',title:'Privacy Policy',icon:'shield'},{id:'help',title:'Help & Support',icon:'help'},{id:'feedback',title:'Feedback',icon:'chat'},{id:'language',title:'Language',icon:'globe',value:data.language==='km'?'ខ្មែរ':'English'}].map((row,idx,arr)=>(
           <button key={row.id} onClick={()=>setProfilePage(row.id)} className="profile-row w-full px-3.5 py-3 flex items-center gap-3 text-left">
             <span className="w-[22px] flex justify-center opacity-55 shrink-0"><Icon name={row.icon} size={15}/></span>
-            <span className="flex-1 text-[13px] font-medium">{L(row.title)}</span>
+            <span className="flex-1 text-[13px] font-medium">{tr(row.title)}</span>
             {row.value?<span className="text-[11.5px] subtext-clr">{row.value}</span>:<span className="opacity-30"><Icon name="chevronRight" size={12}/></span>}
           </button>
         ))}
@@ -3027,8 +3027,8 @@ function App(){
 
       <button onClick={()=>setProfilePage('bucket')} className="glass-card w-full rounded-[20px] px-3.5 py-3 flex items-center gap-3 text-left">
         <span className="w-[22px] flex justify-center opacity-55 shrink-0"><Icon name="mapPin" size={15}/></span>
-        <span className="flex-1 text-[13px] font-medium">{L('Bucket List')}</span>
-        <span className="text-[11.5px] subtext-clr">{bucketList.length} {L('saved')}</span>
+        <span className="flex-1 text-[13px] font-medium">{tr('Bucket List')}</span>
+        <span className="text-[11.5px] subtext-clr">{bucketList.length} {tr('saved')}</span>
         <span className="opacity-30"><Icon name="chevronRight" size={12}/></span>
       </button>
 
@@ -3038,28 +3038,28 @@ function App(){
       </div>
     </div>}
     {profilePage!=='main'&&<div className="space-y-4"><button onClick={()=>setProfilePage('main')} className="text-xs accent-txt">← Back to Profile</button>
-     {profilePage==='settings'&&<section className="glass-card rounded-[22px] p-5 space-y-4"><div><h2 className="app-section-title">{L('Settings')}</h2><p className="text-[11.5px] subtext-clr mt-1">{L('Preferences for this device.')}</p></div>
+     {profilePage==='settings'&&<section className="glass-card rounded-[22px] p-5 space-y-4"><div><h2 className="app-section-title">{tr('Settings')}</h2><p className="text-[11.5px] subtext-clr mt-1">{tr('Preferences for this device.')}</p></div>
       <div className="space-y-2">
-       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{L('Trip money')}</div>
-       <label className="block text-[11px] subtext-clr">{L('Trip currency')} <span className="opacity-60">· {activeTrip.title}</span><DropSelect value={activeTrip.currency||DEFAULT_CURRENCY} onChange={v=>updateActiveTrip({currency:v})} options={CURRENCY_OPTIONS_LONG} ariaLabel="Trip currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
-       <label className="block text-[11px] subtext-clr">{L('Default currency for new trips')}<DropSelect value={data.defaultCurrency||DEFAULT_CURRENCY} onChange={v=>setData(d=>({...d,defaultCurrency:v}))} options={CURRENCY_OPTIONS_LONG} ariaLabel="Default currency for new trips" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
+       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{tr('Trip money')}</div>
+       <label className="block text-[11px] subtext-clr">{tr('Trip currency')} <span className="opacity-60">· {activeTrip.title}</span><DropSelect value={activeTrip.currency||DEFAULT_CURRENCY} onChange={v=>updateActiveTrip({currency:v})} options={CURRENCY_OPTIONS_LONG} ariaLabel="Trip currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
+       <label className="block text-[11px] subtext-clr">{tr('Default currency for new trips')}<DropSelect value={data.defaultCurrency||DEFAULT_CURRENCY} onChange={v=>setData(d=>({...d,defaultCurrency:v}))} options={CURRENCY_OPTIONS_LONG} ariaLabel="Default currency for new trips" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
       </div>
       <div className="space-y-2 pt-3 border-t border-white/10">
-       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{L('Appearance')}</div>
-       <div className="flex justify-between items-center"><div><div className="text-sm font-medium">{L('Dark mode')}</div><div className="text-[11px] subtext-clr mt-0.5">{L('Easier on the eyes at night')}</div></div><button onClick={toggleTheme} aria-label="Toggle dark mode" className={'w-12 h-6 rounded-full transition p-0.5 flex items-center '+(data.theme==='dark'?'bg-[#1B54FF] justify-end':'bg-neutral-400 justify-start')}><div className="w-5 h-5 rounded-full bg-white shadow-md"/></button></div>
+       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{tr('Appearance')}</div>
+       <div className="flex justify-between items-center"><div><div className="text-sm font-medium">{tr('Dark mode')}</div><div className="text-[11px] subtext-clr mt-0.5">{tr('Easier on the eyes at night')}</div></div><button onClick={toggleTheme} aria-label="Toggle dark mode" className={'w-12 h-6 rounded-full transition p-0.5 flex items-center '+(data.theme==='dark'?'bg-[#1B54FF] justify-end':'bg-neutral-400 justify-start')}><div className="w-5 h-5 rounded-full bg-white shadow-md"/></button></div>
       </div>
       <div className="pt-3 border-t border-white/10">
-       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{L('Account')}</div>
-       <button type="button" onClick={()=>setProfilePage('account')} className="w-full mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left"><span className="min-w-0"><span className="block text-[12.5px] font-medium">{data.accountMode==='cloud'?'DerLog Cloud':L('On this phone only')}</span><span className="block text-[10.5px] subtext-clr mt-0.5 truncate">{cloudStatusLabel} · {L(data.accountMode==='cloud'?'Google Drive backup':'No account needed')}</span></span><span className="opacity-35 shrink-0"><Icon name="chevronRight" size={12}/></span></button>
+       <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">{tr('Account')}</div>
+       <button type="button" onClick={()=>setProfilePage('account')} className="w-full mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left"><span className="min-w-0"><span className="block text-[12.5px] font-medium">{data.accountMode==='cloud'?'DerLog Cloud':tr('On this phone only')}</span><span className="block text-[10.5px] subtext-clr mt-0.5 truncate">{cloudStatusLabel} · {tr(data.accountMode==='cloud'?'Google Drive backup':'No account needed')}</span></span><span className="opacity-35 shrink-0"><Icon name="chevronRight" size={12}/></span></button>
       </div>
      </section>}
-     {profilePage==='convert'&&<div className="space-y-3"><div><h2 className="app-section-title">Currency Converter</h2><p className="text-[11.5px] subtext-clr mt-1">{L('Check a price before you pay — no need to open a browser.')}</p></div><CurrencyCalculator baseCurrency={activeTrip.currency||DEFAULT_CURRENCY}/></div>}
-     {profilePage==='cards'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Bank Cards</h2><p className="text-xs subtext-clr">{L('Saved cards will appear here in a future update.')}</p></section>}
-     {profilePage==='privacy'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><h2 className="app-section-title">Privacy Policy</h2><p className="text-xs subtext-clr">{L('Trips, bookings, photos and your profile are always stored in this browser on this device. Offline accounts never upload anything. Cloud accounts also keep one copy in a hidden app folder in your own Google Drive, so only that Google account can read it. There is no DerLog account server.')}</p><div className="space-y-2 text-[11.5px] subtext-clr leading-relaxed"><p><strong className="font-semibold">{L('Sign-in.')}</strong> {L("Google sign-in reads the name, email and picture you approve. Cloud accounts also ask for access to DerLog's own Google Drive app folder; the access token is kept only for this browser session and is never sent to DerLog.")}</p><p><strong className="font-semibold">{L('Network requests.')}</strong> {L('Map tiles and place recommendations come from OpenStreetMap, place search from Photon, photos from Openverse and Wikimedia Commons, and text recognition runs on this device.')}</p><p><strong className="font-semibold">{L('Your control.')}</strong> {L('Export a backup any time. Deleting the data below cannot be undone.')}</p></div><button onClick={handleDeleteAllData} className="w-full rounded-xl py-2.5 text-[11.5px] font-medium text-red-400 border border-red-400/30">Delete all my data</button></section>}
-     {profilePage==='backup'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><h2 className="app-section-title">Backup &amp; Restore</h2><p className="text-xs subtext-clr">{L('One file holds every trip, booking, photo and saved place. Keep it in your own storage — it is the only copy if this browser is cleared.')}</p><div className="glass-card rounded-xl p-3 text-[11.5px] subtext-clr space-y-1"><div className="flex justify-between"><span>{L('Saved in this browser')}</span><strong className="accent-txt">{saveBytes?`${Math.max(1,Math.round(saveBytes/1024))} KB`:'—'}</strong></div><div className="flex justify-between"><span>{L('Offline copy')}</span><strong className={offlineReady?'accent-txt':'subtext-clr'}>{offlineReady?'Ready':'Building…'}</strong></div><div className="flex justify-between"><span>Schema</span><strong>v{SCHEMA_VERSION}</strong></div></div><button onClick={handleBackupExport} className="w-full bg-[#1B54FF] text-white rounded-full py-3 text-xs font-semibold inline-flex items-center justify-center gap-1.5"><Icon name="download" size={13}/>{L('Export backup file')}</button><label className="w-full glass-pill rounded-full py-3 text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"><Icon name="upload" size={13}/>{L('Restore from a backup')}<input type="file" accept=".json,application/json" className="hidden" onChange={handleBackupImport}/></label><p className="text-[11px] subtext-clr leading-relaxed">{L("Restoring adds the file's trips and saved places; anything already on this device is kept. Export first if you want a second copy.")}</p></section>}
-     {profilePage==='help'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Help &amp; Support</h2><p className="text-xs subtext-clr">{L('Stuck on a scan or a booking? Send a note from Feedback and it will be looked at.')}</p></section>}
-     {profilePage==='feedback'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Feedback</h2><p className="text-xs subtext-clr">{L('Feedback sending is not connected yet. This space is reserved for it.')}</p></section>}
-     {profilePage==='language'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><div><h2 className="app-section-title">{L('Language')}</h2><p className="text-[11px] subtext-clr mt-1">Choose the language for DerLog.</p></div>{[{id:'en',label:'English'},{id:'km',label:'ខ្មែរ'}].map(option=>{const chosen=(data.language==='km'?'km':'en')===option.id;return <button key={option.id} type="button" onClick={()=>setData(d=>({...d,language:option.id}))} className={`w-full flex justify-between items-center rounded-xl border px-3.5 py-3 text-left ${chosen?'border-[#1B54FF] bg-[#1B54FF]/15':'border-white/10 bg-white/[0.03]'}`}><span className="text-sm font-medium">{option.label}</span>{chosen?<span className="text-[11px] accent-txt">{L('Selected')}</span>:null}</button>})}</section>}
+     {profilePage==='convert'&&<div className="space-y-3"><div><h2 className="app-section-title">Currency Converter</h2><p className="text-[11.5px] subtext-clr mt-1">{tr('Check a price before you pay — no need to open a browser.')}</p></div><CurrencyCalculator baseCurrency={activeTrip.currency||DEFAULT_CURRENCY}/></div>}
+     {profilePage==='cards'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Bank Cards</h2><p className="text-xs subtext-clr">{tr('Saved cards will appear here in a future update.')}</p></section>}
+     {profilePage==='privacy'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><h2 className="app-section-title">Privacy Policy</h2><p className="text-xs subtext-clr">{tr('Trips, bookings, photos and your profile are always stored in this browser on this device. Offline accounts never upload anything. Cloud accounts also keep one copy in a hidden app folder in your own Google Drive, so only that Google account can read it. There is no DerLog account server.')}</p><div className="space-y-2 text-[11.5px] subtext-clr leading-relaxed"><p><strong className="font-semibold">{tr('Sign-in.')}</strong> {tr("Google sign-in reads the name, email and picture you approve. Cloud accounts also ask for access to DerLog's own Google Drive app folder; the access token is kept only for this browser session and is never sent to DerLog.")}</p><p><strong className="font-semibold">{tr('Network requests.')}</strong> {tr('Map tiles and place recommendations come from OpenStreetMap, place search from Photon, photos from Openverse and Wikimedia Commons, and text recognition runs on this device.')}</p><p><strong className="font-semibold">{tr('Your control.')}</strong> {tr('Export a backup any time. Deleting the data below cannot be undone.')}</p></div><button onClick={handleDeleteAllData} className="w-full rounded-xl py-2.5 text-[11.5px] font-medium text-red-400 border border-red-400/30">Delete all my data</button></section>}
+     {profilePage==='backup'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><h2 className="app-section-title">Backup &amp; Restore</h2><p className="text-xs subtext-clr">{tr('One file holds every trip, booking, photo and saved place. Keep it in your own storage — it is the only copy if this browser is cleared.')}</p><div className="glass-card rounded-xl p-3 text-[11.5px] subtext-clr space-y-1"><div className="flex justify-between"><span>{tr('Saved in this browser')}</span><strong className="accent-txt">{saveBytes?`${Math.max(1,Math.round(saveBytes/1024))} KB`:'—'}</strong></div><div className="flex justify-between"><span>{tr('Offline copy')}</span><strong className={offlineReady?'accent-txt':'subtext-clr'}>{offlineReady?'Ready':'Building…'}</strong></div><div className="flex justify-between"><span>Schema</span><strong>v{SCHEMA_VERSION}</strong></div></div><button onClick={handleBackupExport} className="w-full bg-[#1B54FF] text-white rounded-full py-3 text-xs font-semibold inline-flex items-center justify-center gap-1.5"><Icon name="download" size={13}/>{tr('Export backup file')}</button><label className="w-full glass-pill rounded-full py-3 text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer"><Icon name="upload" size={13}/>{tr('Restore from a backup')}<input type="file" accept=".json,application/json" className="hidden" onChange={handleBackupImport}/></label><p className="text-[11px] subtext-clr leading-relaxed">{tr("Restoring adds the file's trips and saved places; anything already on this device is kept. Export first if you want a second copy.")}</p></section>}
+     {profilePage==='help'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Help &amp; Support</h2><p className="text-xs subtext-clr">{tr('Stuck on a scan or a booking? Send a note from Feedback and it will be looked at.')}</p></section>}
+     {profilePage==='feedback'&&<section className="glass-card rounded-[22px] p-5 space-y-2"><h2 className="app-section-title">Feedback</h2><p className="text-xs subtext-clr">{tr('Feedback sending is not connected yet. This space is reserved for it.')}</p></section>}
+     {profilePage==='language'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><div><h2 className="app-section-title">{tr('Language')}</h2><p className="text-[11px] subtext-clr mt-1">Choose the language for DerLog.</p></div>{[{id:'en',label:'English'},{id:'km',label:'ខ្មែរ'}].map(option=>{const chosen=(data.language==='km'?'km':'en')===option.id;return <button key={option.id} type="button" onClick={()=>setData(d=>({...d,language:option.id}))} className={`w-full flex justify-between items-center rounded-xl border px-3.5 py-3 text-left ${chosen?'border-[#1B54FF] bg-[#1B54FF]/15':'border-white/10 bg-white/[0.03]'}`}><span className="text-sm font-medium">{option.label}</span>{chosen?<span className="text-[11px] accent-txt">{tr('Selected')}</span>:null}</button>})}</section>}
      {profilePage==='profile'&&<section className="space-y-3"><h2 className="app-section-title">Profile</h2><div className="flex items-center gap-3"><label className="relative cursor-pointer"><Avatar src={data.userProfilePic} name={data.userName} email={data.userEmail} size={64} className="border-2 border-[#1B54FF]"/><span className="absolute -bottom-1 -right-1 bg-[#1B54FF] rounded-full w-6 h-6 flex items-center justify-center text-white"><Icon name="edit" size={11}/></span><input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>setData(d=>({...d,userProfilePic:rd.result}));rd.readAsDataURL(f)}}/></label><div className="flex-1"><div className="text-sm font-medium">Profile picture</div><div className="text-[11px] subtext-clr">Tap the photo to change it</div></div></div><label className="block text-[11px] subtext-clr">Display name<input value={data.userName} onChange={e=>setData(d=>({...d,userName:e.target.value}))} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1" placeholder="Your name"/></label>{data.accountMode==='cloud'?<label className="block text-[11px] subtext-clr">Email<input value={data.userEmail} readOnly className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1 opacity-70" placeholder="you@example.com"/></label>:<p className="text-[11px] subtext-clr">Offline account — no email is needed or stored.</p>}<button onClick={handleSignOut} className="w-full glass-pill rounded-full py-3 text-[11.5px] font-medium text-red-400">Sign out</button></section>}
      {profilePage==='account'&&<section className="glass-card rounded-[22px] p-5 space-y-3"><div><h2 className="app-section-title">Account</h2><p className="text-[11.5px] subtext-clr mt-1">Where your trips are kept.</p></div>
        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-2">
@@ -3069,13 +3069,13 @@ function App(){
          {data.accountMode!=='cloud'&&<p className="text-[10.5px] subtext-clr opacity-80">Sign out, then choose “Continue with Google” to switch to a cloud account.</p>}
        </div>
       </section>}
-     {profilePage==='bucket'&&<section className="space-y-3"><h2 className="app-section-title">Bucket List</h2><p className="text-[11px] subtext-clr">Your personal places to visit, across all trips</p><form onSubmit={e=>{e.preventDefault();if(!bucketDraft.trim())return;setBucketList(v=>[...v,{id:Date.now().toString(),title:bucketDraft.trim(),resolvedPlace:null}]);setBucketDraft('')}} className="flex gap-2"><input value={bucketDraft} onChange={e=>setBucketDraft(e.target.value)} placeholder="Add a place (e.g. Koh Rong)" className="input-bg flex-1 rounded-xl px-3.5 py-2.5 text-xs outline-none"/><button className="bg-[#1B54FF] text-white rounded-xl px-4 flex items-center justify-center"><Icon name="plus" size={14}/></button></form><div className="space-y-2">{bucketList.length===0?<p className="text-[11.5px] subtext-clr">Your bucket list is empty.</p>:bucketList.map(b=><div key={b.id} className="glass-card rounded-xl p-3 flex justify-between items-center gap-2"><div className="min-w-0"><div className="text-xs font-medium">{b.title}</div><div className="text-[11px] subtext-clr mt-1">{b.resolvedPlace?[b.resolvedPlace.name,b.resolvedPlace.city,b.resolvedPlace.country].filter(Boolean).join(', '):b.lookupFailed?'Location not found yet':'Finding location…'}</div></div><button onClick={()=>setBucketList(v=>v.filter(x=>x.id!==b.id))} className="text-[11px] opacity-60 shrink-0">{L('Remove')}</button></div>)}</div>{bucketMatches.length>0&&<p className="text-[11px] accent-txt">{bucketMatches.length} of these {bucketMatches.length===1?'is':'are'} near {activeTrip.title}</p>}</section>}
+     {profilePage==='bucket'&&<section className="space-y-3"><h2 className="app-section-title">Bucket List</h2><p className="text-[11px] subtext-clr">Your personal places to visit, across all trips</p><form onSubmit={e=>{e.preventDefault();if(!bucketDraft.trim())return;setBucketList(v=>[...v,{id:Date.now().toString(),title:bucketDraft.trim(),resolvedPlace:null}]);setBucketDraft('')}} className="flex gap-2"><input value={bucketDraft} onChange={e=>setBucketDraft(e.target.value)} placeholder="Add a place (e.g. Koh Rong)" className="input-bg flex-1 rounded-xl px-3.5 py-2.5 text-xs outline-none"/><button className="bg-[#1B54FF] text-white rounded-xl px-4 flex items-center justify-center"><Icon name="plus" size={14}/></button></form><div className="space-y-2">{bucketList.length===0?<p className="text-[11.5px] subtext-clr">Your bucket list is empty.</p>:bucketList.map(b=><div key={b.id} className="glass-card rounded-xl p-3 flex justify-between items-center gap-2"><div className="min-w-0"><div className="text-xs font-medium">{b.title}</div><div className="text-[11px] subtext-clr mt-1">{b.resolvedPlace?[b.resolvedPlace.name,b.resolvedPlace.city,b.resolvedPlace.country].filter(Boolean).join(', '):b.lookupFailed?'Location not found yet':'Finding location…'}</div></div><button onClick={()=>setBucketList(v=>v.filter(x=>x.id!==b.id))} className="text-[11px] opacity-60 shrink-0">{tr('Remove')}</button></div>)}</div>{bucketMatches.length>0&&<p className="text-[11px] accent-txt">{bucketMatches.length} of these {bucketMatches.length===1?'is':'are'} near {activeTrip.title}</p>}</section>}
     </div>}
    </div>}
   </div>
 
   <div className="absolute bottom-4 inset-x-4 z-20 flex items-center justify-between gap-3 pointer-events-none"><div className="nav-container pointer-events-auto flex-1 h-14 rounded-full px-4 flex items-center justify-between shadow-2xl">
-   {['home','plan','budget','destinations','profile'].map((tab,idx)=><button key={tab} onClick={()=>{if(tab==='profile')setProfilePage('main');setActiveTab(tab)}} title={L(tab==='destinations'?'Destinations':tab==='plan'?'Planning':tab==='budget'?'Budget':tab==='profile'?'Profile':'Home')} aria-label={L(tab==='destinations'?'Destinations':tab==='plan'?'Planning':tab==='budget'?'Budget':tab==='profile'?'Profile':'Home')} className={`w-11 h-11 rounded-full transition flex items-center justify-center ${activeTab===tab?'bg-[#1B54FF] text-white shadow-[0_0_16px_rgba(27,84,255,0.28)]':'text-white/75 hover:bg-white/5'}`}>{idx===4?<Avatar src={data.userProfilePic} name={data.userName} email={data.userEmail} size={24} className="border border-current/40"/>:<Icon name={idx===0?'home':idx===1?'mapPin':idx===2?'ticket':'map'} size={20}/>}</button>)}
+   {['home','plan','budget','destinations','profile'].map((tab,idx)=><button key={tab} onClick={()=>{if(tab==='profile')setProfilePage('main');setActiveTab(tab)}} title={tr(tab==='destinations'?'Destinations':tab==='plan'?'Planning':tab==='budget'?'Budget':tab==='profile'?'Profile':'Home')} aria-label={tr(tab==='destinations'?'Destinations':tab==='plan'?'Planning':tab==='budget'?'Budget':tab==='profile'?'Profile':'Home')} className={`w-11 h-11 rounded-full transition flex items-center justify-center ${activeTab===tab?'bg-[#1B54FF] text-white shadow-[0_0_16px_rgba(27,84,255,0.28)]':'text-white/75 hover:bg-white/5'}`}>{idx===4?<Avatar src={data.userProfilePic} name={data.userName} email={data.userEmail} size={24} className="border border-current/40"/>:<Icon name={idx===0?'home':idx===1?'mapPin':idx===2?'ticket':'map'} size={20}/>}</button>)}
   </div><button onClick={()=>{setNewCategory('Explore');setNewPlanDate(activeTrip.startDate||'');setNewDay('Day 1');setNewTime('');setNewCost('');setNewTitle('');setNewNotes('');setCostCurrency(currencyOf(activeTrip).code);setNewRentalStart('');setNewRentalEnd('');setNewRentalStartTime('');setNewRentalEndTime('');setShowAddModal(true)}} aria-label="Add plan" className="pointer-events-auto w-14 h-14 rounded-full bg-[#1B54FF] text-white flex items-center justify-center shadow-[0_0_25px_rgba(27,84,255,0.45)] shrink-0"><Icon name="plus" size={22} strokeWidth={2}/></button></div>
 
   {showFullMap&&<FullMapScreen activeTrip={activeTrip} onAddPlace={handleAddPlaceFromMap} onClose={()=>setShowFullMap(false)}/>}
@@ -3085,24 +3085,24 @@ function App(){
   {showTripDatesEditor&&<div className="absolute inset-0 bg-black/75 backdrop-blur-md z-[65] flex items-end"><form onSubmit={handleUpdateTripDates} className="modal-bg w-full border-t rounded-t-[28px] p-5 space-y-4"><div className="flex justify-between items-center"><div><h3 className="text-sm font-semibold">Trip dates</h3><p className="text-[11px] subtext-clr mt-1">Update your travel schedule</p></div><button type="button" onClick={()=>setShowTripDatesEditor(false)} aria-label="Close" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div><div className="grid grid-cols-2 gap-3"><label className="text-[11px] subtext-clr">Start date<input type="date" value={editTripStart} onChange={e=>setEditTripStart(e.target.value)} className="input-bg w-full rounded-xl px-3 py-3 mt-1 text-xs" required/></label><label className="text-[11px] subtext-clr">End date<input type="date" min={editTripStart} value={editTripEnd} onChange={e=>setEditTripEnd(e.target.value)} className="input-bg w-full rounded-xl px-3 py-3 mt-1 text-xs" required/></label></div><div className="glass-card rounded-xl p-3 flex justify-between text-xs"><span className="subtext-clr">Trip duration</span><strong className="accent-txt">{editTripStart&&editTripEnd&&editTripEnd>=editTripStart?daysBetween(editTripStart,editTripEnd)+1:0} days</strong></div><button type="submit" className="w-full bg-[#1B54FF] text-white text-xs font-semibold py-3 rounded-full">Save trip dates</button></form></div>}
   {showBudgetModal&&<div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-5"><form onSubmit={handleUpdateBudget} className="modal-bg w-full max-w-[300px] border rounded-[24px] p-5 space-y-4"><div className="flex justify-between items-center"><h3 className="text-sm font-medium">Edit Trip Budget</h3><button type="button" onClick={()=>setShowBudgetModal(false)} aria-label="Close" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div><input type="number" min="1" value={editBudgetVal} onChange={e=>setEditBudgetVal(e.target.value)} className="input-bg w-full rounded-xl px-4 py-3 text-lg font-medium outline-none" placeholder="2400" required/><button type="submit" className="w-full bg-[#1B54FF] text-white text-xs font-medium py-3 rounded-full">Save Budget</button></form></div>}
   {showTripSwitcher&&<div className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end"><div className="modal-bg w-full border-t rounded-t-[28px] p-5 space-y-3 max-h-[85%] overflow-y-auto no-scrollbar"><div className="flex justify-between items-center"><h3 className="text-sm font-medium">Trips</h3><button onClick={()=>{setShowTripSwitcher(false);setShowNewTripForm(false)}} aria-label="Close" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>
-   {!showNewTripForm?<><div className="space-y-2 max-h-52 overflow-y-auto no-scrollbar">{data.trips.map(t=><div key={t.id} className="relative overflow-hidden rounded-[16px]"><button type="button" className="trip-swipe-action absolute inset-y-0 right-0 w-[82px] text-xs font-semibold rounded-r-[16px]" style={{opacity:swipingTripId===t.id?1:0,transition:"opacity .22s ease"}} onClick={async e=>{e.stopPropagation();if(data.trips.length===1){derAlert('Keep at least one trip in DerLog.');return}if(await derConfirm(`Remove ${t.title}? This cannot be undone.`,'Remove trip')){setData(d=>{const trips=d.trips.filter(x=>x.id!==t.id);return {...d,trips,activeTripId:trips.some(x=>x.id===d.activeTripId)?d.activeTripId:trips[0].id}});setSwipingTripId(null)}}}>{L('Remove')}</button><div onPointerDown={e=>{try{e.currentTarget.setPointerCapture(e.pointerId)}catch(err){}tripSwipeStartRef.current=e.clientX}} onPointerUp={e=>{const startX=tripSwipeStartRef.current;tripSwipeStartRef.current=null;if(startX===null)return;const dx=e.clientX-startX;if(dx<-45)setSwipingTripId(t.id);else if(dx>45&&swipingTripId===t.id)setSwipingTripId(null)}} onPointerCancel={()=>{tripSwipeStartRef.current=null}} onClick={()=>{if(swipingTripId===t.id){setSwipingTripId(null);return}setData(d=>({...d,activeTripId:t.id}));setSelectedDayFilter('All');setShowTripSwitcher(false)}} className={`trip-swipe-card relative z-10 p-3 flex justify-between items-center cursor-pointer ${t.id===activeTrip.id?'bg-[#1B54FF] text-white':'glass-card'}`} style={{transform:swipingTripId===t.id?'translateX(-82px)':'translateX(0)'}}><div><div className="text-xs font-medium">{t.title}</div><div className="text-[11px] subtext-clr">{formatDateRange(t.startDate,t.endDate)}</div></div><span className="text-[11px]">{t.id===activeTrip.id?'Active':'Select'}</span></div></div>)}</div><button onClick={()=>setShowNewTripForm(true)} className="w-full bg-white text-black text-xs font-medium py-3 rounded-full">+ Create New Trip</button></>:<form onSubmit={handleCreateTrip} className="space-y-3"><div className="relative"><input type="text" placeholder="Destination (e.g., Paris, Bali)" value={tripTitle} onFocus={()=>setShowDestinationSuggestions(true)} onChange={e=>{setTripTitle(e.target.value);setSelectedDestination(null);setShowDestinationSuggestions(true)}} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none" required/>{showDestinationSuggestions&&tripTitle.trim().length>=2&&<div className="absolute z-[70] top-full mt-1 left-0 right-0 glass-card rounded-xl overflow-y-auto max-h-44 shadow-xl">{destinationSuggestions.length?destinationSuggestions.map((p,i)=><button type="button" key={p.place_id||i} onClick={()=>{setTripTitle(p.short_name);setSelectedDestination(p);setDestinationSuggestions([]);setShowDestinationSuggestions(false)}} className="block w-full text-left px-3 py-2.5 text-[11.5px] border-b border-white/10 last:border-0">{p.display_name}</button>):<div className="px-3 py-3 text-[11.5px] subtext-clr">Searching for places…</div>}</div>}</div><div className="space-y-1"><label className="text-[11px] subtext-clr">Select Date Range (Start &amp; End)</label><RangeCalendar startDate={tripStartDate} endDate={tripEndDate} onSelectRange={(s,e)=>{setTripStartDate(s);setTripEndDate(e)}}/></div><div><label className="text-[11px] subtext-clr">Total Budget ({(data.defaultCurrency||DEFAULT_CURRENCY)})</label><input type="number" min="1" placeholder="2500" value={tripBudget} onChange={e=>setTripBudget(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1"/></div><div className="flex gap-2 pt-2"><button type="button" onClick={()=>setShowNewTripForm(false)} className="w-1/3 glass-pill text-xs py-2.5 rounded-full">Back</button><button type="submit" className="w-2/3 bg-[#1B54FF] text-white text-xs font-medium py-2.5 rounded-full">Start Trip</button></div></form>}
+   {!showNewTripForm?<><div className="space-y-2 max-h-52 overflow-y-auto no-scrollbar">{data.trips.map(t=><div key={t.id} className="relative overflow-hidden rounded-[16px]"><button type="button" className="trip-swipe-action absolute inset-y-0 right-0 w-[82px] text-xs font-semibold rounded-r-[16px]" style={{opacity:swipingTripId===t.id?1:0,transition:"opacity .22s ease"}} onClick={async e=>{e.stopPropagation();if(data.trips.length===1){derAlert('Keep at least one trip in DerLog.');return}if(await derConfirm(`Remove ${t.title}? This cannot be undone.`,'Remove trip')){setData(d=>{const trips=d.trips.filter(x=>x.id!==t.id);return {...d,trips,activeTripId:trips.some(x=>x.id===d.activeTripId)?d.activeTripId:trips[0].id}});setSwipingTripId(null)}}}>{tr('Remove')}</button><div onPointerDown={e=>{try{e.currentTarget.setPointerCapture(e.pointerId)}catch(err){}tripSwipeStartRef.current=e.clientX}} onPointerUp={e=>{const startX=tripSwipeStartRef.current;tripSwipeStartRef.current=null;if(startX===null)return;const dx=e.clientX-startX;if(dx<-45)setSwipingTripId(t.id);else if(dx>45&&swipingTripId===t.id)setSwipingTripId(null)}} onPointerCancel={()=>{tripSwipeStartRef.current=null}} onClick={()=>{if(swipingTripId===t.id){setSwipingTripId(null);return}setData(d=>({...d,activeTripId:t.id}));setSelectedDayFilter('All');setShowTripSwitcher(false)}} className={`trip-swipe-card relative z-10 p-3 flex justify-between items-center cursor-pointer ${t.id===activeTrip.id?'bg-[#1B54FF] text-white':'glass-card'}`} style={{transform:swipingTripId===t.id?'translateX(-82px)':'translateX(0)'}}><div><div className="text-xs font-medium">{t.title}</div><div className="text-[11px] subtext-clr">{formatDateRange(t.startDate,t.endDate)}</div></div><span className="text-[11px]">{t.id===activeTrip.id?'Active':'Select'}</span></div></div>)}</div><button onClick={()=>setShowNewTripForm(true)} className="w-full bg-white text-black text-xs font-medium py-3 rounded-full">+ Create New Trip</button></>:<form onSubmit={handleCreateTrip} className="space-y-3"><div className="relative"><input type="text" placeholder="Destination (e.g., Paris, Bali)" value={tripTitle} onFocus={()=>setShowDestinationSuggestions(true)} onChange={e=>{setTripTitle(e.target.value);setSelectedDestination(null);setShowDestinationSuggestions(true)}} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none" required/>{showDestinationSuggestions&&tripTitle.trim().length>=2&&<div className="absolute z-[70] top-full mt-1 left-0 right-0 glass-card rounded-xl overflow-y-auto max-h-44 shadow-xl">{destinationSuggestions.length?destinationSuggestions.map((p,i)=><button type="button" key={p.place_id||i} onClick={()=>{setTripTitle(p.short_name);setSelectedDestination(p);setDestinationSuggestions([]);setShowDestinationSuggestions(false)}} className="block w-full text-left px-3 py-2.5 text-[11.5px] border-b border-white/10 last:border-0">{p.display_name}</button>):<div className="px-3 py-3 text-[11.5px] subtext-clr">Searching for places…</div>}</div>}</div><div className="space-y-1"><label className="text-[11px] subtext-clr">Select Date Range (Start &amp; End)</label><RangeCalendar startDate={tripStartDate} endDate={tripEndDate} onSelectRange={(s,e)=>{setTripStartDate(s);setTripEndDate(e)}}/></div><div><label className="text-[11px] subtext-clr">Total Budget ({(data.defaultCurrency||DEFAULT_CURRENCY)})</label><input type="number" min="1" placeholder="2500" value={tripBudget} onChange={e=>setTripBudget(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1"/></div><div className="flex gap-2 pt-2"><button type="button" onClick={()=>setShowNewTripForm(false)} className="w-1/3 glass-pill text-xs py-2.5 rounded-full">Back</button><button type="submit" className="w-2/3 bg-[#1B54FF] text-white text-xs font-medium py-2.5 rounded-full">Start Trip</button></div></form>}
   </div></div>}
   {budgetCategory&&(()=>{const group=activeTrip.items.filter(i=>i.category===budgetCategory);const sum=group.reduce((s,i)=>s+(Number(i.cost)||0),0);return <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-[78] flex items-center justify-center p-4" onClick={()=>setBudgetCategory(null)}><div className="modal-bg w-full max-w-[340px] max-h-[80%] overflow-y-auto no-scrollbar rounded-[26px] border p-4 space-y-3" onClick={e=>e.stopPropagation()}><div className="flex justify-between items-start gap-2"><div><h3 className="text-sm font-semibold">{budgetCategory} expenses</h3><p className="text-[11px] subtext-clr mt-0.5">{group.length} {group.length===1?'item':'items'} · {money(sum,activeTrip)}</p></div><button onClick={()=>setBudgetCategory(null)} aria-label="Close category" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center shrink-0"><Icon name="close" size={12}/></button></div>{group.length===0?<p className="text-[11.5px] subtext-clr">Nothing in this category yet.</p>:<div className="space-y-1.5">{group.map(i=><div key={i.id} className="glass-pill rounded-xl px-3 py-2 flex justify-between items-center gap-2"><div className="min-w-0"><div className="text-[12px] font-medium truncate">{i.title}</div><div className="text-[10.5px] subtext-clr truncate">{[formatDateStr(i.date||''),i.time,i.notes].filter(Boolean).join(' · ')}</div></div><span className="text-[11.5px] font-medium text-[#FEB122] shrink-0">{money(i.cost,activeTrip)}</span></div>)}</div>}</div></div>})()}
-  {showAddModal&&<div className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end"><form onSubmit={handleAddItem} className="modal-bg w-full border-t rounded-t-[28px] p-5 space-y-3 max-h-[85%] overflow-y-auto no-scrollbar"><div className="flex justify-between items-center"><h3 className="text-sm font-medium">{L('Add Plan')}</h3><button type="button" onClick={()=>setShowAddModal(false)} aria-label="Close" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>
+  {showAddModal&&<div className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 flex items-end"><form onSubmit={handleAddItem} className="modal-bg w-full border-t rounded-t-[28px] p-5 space-y-3 max-h-[85%] overflow-y-auto no-scrollbar"><div className="flex justify-between items-center"><h3 className="text-sm font-medium">{tr('Add Plan')}</h3><button type="button" onClick={()=>setShowAddModal(false)} aria-label="Close" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>
    <div className="flex flex-wrap gap-1.5 pt-1">{['Food','Explore','Rental','Expense'].map(c=><button type="button" key={c} onClick={()=>handleCategoryChange(c)} className={`px-3 py-1 rounded-full text-[11.5px] ${newCategory===c?'bg-[#1B54FF] text-white':'glass-pill'}`}>{c}</button>)}</div>
-   <input type="text" placeholder={L(newCategory==='Rental'?'Motorbike, car or gear':newCategory==='Expense'?'What did you spend on?':'Place or activity')} value={newTitle} onChange={e=>setNewTitle(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none" required/>
-   {newCategory==='Rental'&&<div className="glass-card rounded-2xl p-3 space-y-2"><div className="text-xs font-semibold">{L('Rental period')}</div><div className="stay-fields"><label className="text-[11px] subtext-clr">{L('From')}<input type="date" min={activeTrip.startDate} max={activeTrip.endDate} value={newRentalStart} onChange={e=>setNewRentalStart(e.target.value)} className="input-bg w-full rounded-lg px-2 py-2 mt-1 text-[11.5px]"/><input type="time" value={newRentalStartTime} onChange={e=>setNewRentalStartTime(e.target.value)} className="input-bg w-full rounded-lg px-2 py-1.5 mt-1 text-[11.5px]"/></label><label className="text-[11px] subtext-clr">{L('To')}<input type="date" min={newRentalStart||activeTrip.startDate} max={activeTrip.endDate} value={newRentalEnd} onChange={e=>setNewRentalEnd(e.target.value)} className="input-bg w-full rounded-lg px-2 py-2 mt-1 text-[11.5px]"/><input type="time" value={newRentalEndTime} onChange={e=>setNewRentalEndTime(e.target.value)} className="input-bg w-full rounded-lg px-2 py-1.5 mt-1 text-[11.5px]"/></label></div><div className="flex justify-between items-center text-[11.5px] pt-1"><span className="subtext-clr">{L('Rental length')}</span><strong className="accent-txt">{rentalDurationLabel}</strong></div></div>}
+   <input type="text" placeholder={tr(newCategory==='Rental'?'Motorbike, car or gear':newCategory==='Expense'?'What did you spend on?':'Place or activity')} value={newTitle} onChange={e=>setNewTitle(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none" required/>
+   {newCategory==='Rental'&&<div className="glass-card rounded-2xl p-3 space-y-2"><div className="text-xs font-semibold">{tr('Rental period')}</div><div className="stay-fields"><label className="text-[11px] subtext-clr">{tr('From')}<input type="date" min={activeTrip.startDate} max={activeTrip.endDate} value={newRentalStart} onChange={e=>setNewRentalStart(e.target.value)} className="input-bg w-full rounded-lg px-2 py-2 mt-1 text-[11.5px]"/><input type="time" value={newRentalStartTime} onChange={e=>setNewRentalStartTime(e.target.value)} className="input-bg w-full rounded-lg px-2 py-1.5 mt-1 text-[11.5px]"/></label><label className="text-[11px] subtext-clr">{tr('To')}<input type="date" min={newRentalStart||activeTrip.startDate} max={activeTrip.endDate} value={newRentalEnd} onChange={e=>setNewRentalEnd(e.target.value)} className="input-bg w-full rounded-lg px-2 py-2 mt-1 text-[11.5px]"/><input type="time" value={newRentalEndTime} onChange={e=>setNewRentalEndTime(e.target.value)} className="input-bg w-full rounded-lg px-2 py-1.5 mt-1 text-[11.5px]"/></label></div><div className="flex justify-between items-center text-[11.5px] pt-1"><span className="subtext-clr">{tr('Rental length')}</span><strong className="accent-txt">{rentalDurationLabel}</strong></div></div>}
    <div className="space-y-2">
-    {newCategory!=='Rental'&&<div><div className="flex items-center justify-between"><label className="text-[11px] subtext-clr">{L(newCategory==='Expense'?'Expense date':'Add to trip date')}</label><span className="text-[11px] accent-txt">{formatDateStr(newPlanDate||activeTrip.startDate)}</span></div><div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pt-1">{Array.from({length:Math.max(1,activeTrip.daysCount||1)},(_,i)=>{const date=dateFromTripOffset(activeTrip.startDate,i),chosen=newPlanDate===date;return <button type="button" key={date} onClick={()=>{setNewPlanDate(date);setNewDay(`Day ${i+1}`)}} className={`shrink-0 min-w-[58px] rounded-xl px-2 py-2 text-center border transition ${chosen?'bg-[#1B54FF] text-white border-[#1B54FF]':'glass-pill'}`}><span className="block text-[10px] opacity-75">{shortWeekday(date)}</span><span className="block text-sm font-semibold">{Number(date.slice(-2))}</span><span className="block text-[9px] opacity-70">{L('Day')} {i+1}</span></button>})}</div></div>}
-    {newCategory!=='Expense'&&newCategory!=='Rental'&&<label className="block text-[11px] subtext-clr">{L('Time')}<input type="time" value={newTime} onChange={e=>setNewTime(e.target.value)} className="input-bg w-full rounded-xl px-3 py-2.5 mt-1 text-[11.5px] outline-none"/></label>}
+    {newCategory!=='Rental'&&<div><div className="flex items-center justify-between"><label className="text-[11px] subtext-clr">{tr(newCategory==='Expense'?'Expense date':'Add to trip date')}</label><span className="text-[11px] accent-txt">{formatDateStr(newPlanDate||activeTrip.startDate)}</span></div><div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pt-1">{Array.from({length:Math.max(1,activeTrip.daysCount||1)},(_,i)=>{const date=dateFromTripOffset(activeTrip.startDate,i),chosen=newPlanDate===date;return <button type="button" key={date} onClick={()=>{setNewPlanDate(date);setNewDay(`Day ${i+1}`)}} className={`shrink-0 min-w-[58px] rounded-xl px-2 py-2 text-center border transition ${chosen?'bg-[#1B54FF] text-white border-[#1B54FF]':'glass-pill'}`}><span className="block text-[10px] opacity-75">{shortWeekday(date)}</span><span className="block text-sm font-semibold">{Number(date.slice(-2))}</span><span className="block text-[9px] opacity-70">{tr('Day')} {i+1}</span></button>})}</div></div>}
+    {newCategory!=='Expense'&&newCategory!=='Rental'&&<label className="block text-[11px] subtext-clr">{tr('Time')}<input type="time" value={newTime} onChange={e=>setNewTime(e.target.value)} className="input-bg w-full rounded-xl px-3 py-2.5 mt-1 text-[11.5px] outline-none"/></label>}
     <div className="space-y-1.5">
-     <div className="flex items-center justify-between"><label className="text-[11px] subtext-clr">{L('Cost')}</label><span className="text-[10px] subtext-clr">{L('Paid in any currency')}</span></div>
+     <div className="flex items-center justify-between"><label className="text-[11px] subtext-clr">{tr('Cost')}</label><span className="text-[10px] subtext-clr">{tr('Paid in any currency')}</span></div>
      <div className="flex gap-2"><DropSelect value={costCurrency} onChange={setCostCurrency} options={CURRENCY_OPTIONS} ariaLabel="Cost currency" className="w-[92px] shrink-0" buttonClass="input-bg rounded-xl px-2 py-2.5 text-[11.5px]"/><input type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" value={newCost} onChange={e=>setNewCost(e.target.value)} className="input-bg flex-1 min-w-0 rounded-xl px-3.5 py-2.5 text-xs outline-none"/></div>
-     {newCostConverted?<div className="text-[10.5px] accent-txt leading-snug">≈ {money(newCostConverted,activeTrip)} · converted from {costCurrency} {Number(newCost).toLocaleString('en-US')}</div>:<div className="text-[10px] subtext-clr">{currencyOf(activeTrip).code} {L("is this trip's currency")}</div>}
+     {newCostConverted?<div className="text-[10.5px] accent-txt leading-snug">≈ {money(newCostConverted,activeTrip)} · converted from {costCurrency} {Number(newCost).toLocaleString('en-US')}</div>:<div className="text-[10px] subtext-clr">{currencyOf(activeTrip).code} {tr("is this trip's currency")}</div>}
     </div>
    </div>
-   <input type="text" placeholder={L(newCategory==='Expense'?'Optional note (fuel, tuktuk, water…)':'Notes or confirmation code')} value={newNotes} onChange={e=>setNewNotes(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none"/>
-   <button type="submit" disabled={isSearchingCoords} className="w-full bg-[#1B54FF] text-white text-xs font-medium py-3 rounded-full shadow-lg disabled:opacity-60">{isSearchingCoords?L('Pinning on Map...'):L('Save to Planning')}</button>
+   <input type="text" placeholder={tr(newCategory==='Expense'?'Optional note (fuel, tuktuk, water…)':'Notes or confirmation code')} value={newNotes} onChange={e=>setNewNotes(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none"/>
+   <button type="submit" disabled={isSearchingCoords} className="w-full bg-[#1B54FF] text-white text-xs font-medium py-3 rounded-full shadow-lg disabled:opacity-60">{isSearchingCoords?tr('Pinning on Map...'):tr('Save to Planning')}</button>
   </form></div>}
 
   {showBookings&&<BookingSheet items={bookingItems} currency={activeTrip.currency||data.defaultCurrency||DEFAULT_CURRENCY} onNew={()=>{setShowBookings(false);setBookingEditor({})}} onOpen={item=>setBookingPreview(item)} onClose={()=>setShowBookings(false)}/>}
@@ -3116,7 +3116,7 @@ function App(){
           <h3 className="text-base font-semibold leading-snug">{selectedDestinationDetail.title}</h3>
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             <span className="text-[10px] px-1.5 py-[2px] rounded-full bg-[#1B54FF]/12 accent-txt">{selectedDestinationDetail.kind}</span>
-            <span title={L('Interest score from public popularity')} className="text-[10px] px-1.5 py-[2px] rounded-full bg-[#FEB122]/15 text-[#FEB122] font-semibold inline-flex items-center gap-0.5"><Icon name="star" size={8}/>{Number(selectedDestinationDetail.score||0).toFixed(1)} interest</span>
+            <span title={tr('Interest score from public popularity')} className="text-[10px] px-1.5 py-[2px] rounded-full bg-[#FEB122]/15 text-[#FEB122] font-semibold inline-flex items-center gap-0.5"><Icon name="star" size={8}/>{Number(selectedDestinationDetail.score||0).toFixed(1)} interest</span>
           </div>
         </div>
         <button onClick={()=>setSelectedDestinationDetail(null)} aria-label="Close details" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center shrink-0"><Icon name="close" size={12}/></button>
