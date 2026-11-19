@@ -8,7 +8,9 @@
     "build": "node tools/build-www.mjs",
     "android:add": "npx cap add android",
     "android:sync": "npm run build && npx cap sync android",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "android:sign": "node tools/setup-android-release.mjs",
+    "android:release": "node tools/build-android-release.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",

@@ -8,4 +8,7 @@ derlog-photo-service/data/
 www/
 android/
 .gradle/
+signing/
+*.jks
+*.keystore
 
