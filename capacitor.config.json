@@ -1,0 +1,8 @@
+{
+  "appId": "com.derlog.app",
+  "appName": "DerLog",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

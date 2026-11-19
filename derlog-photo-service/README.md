@@ -34,6 +34,10 @@ GET http://127.0.0.1:3211/api/photos?query=Battambang&limit=10
 }
 ```
 
+Only landscape photos are returned: the service reads each image's header (64 KB, nothing
+is stored) and skips anything narrower than a 1.2:1 ratio, because the slideshow frame is
+16:9. Adjust with `MIN_LANDSCAPE_RATIO`.
+
 Results are cached in memory for 15 minutes (`CACHE_TTL_MS`). The page never caches them.
 
 ## Install (Python 3.14)
@@ -57,8 +61,10 @@ cd derlog-photo-service
 .venv\Scripts\python service.py
 ```
 
-It listens on `http://127.0.0.1:3211` and allows DerLog's real origins,
-`http://127.0.0.1:54830` and `http://localhost:54830`. Override with environment
+It listens on `0.0.0.0:3211` so a phone on the same Wi-Fi can reach it at
+`http://<PC-IP>:3211`; DerLog derives that host from the page URL automatically.
+CORS reflects any loopback or private-network Origin (localhost, 127.0.0.1, 10.x,
+192.168.x, 172.16-31.x) in addition to the two defaults. Override with environment
 variables if you serve DerLog elsewhere:
 
 ```powershell

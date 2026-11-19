@@ -1,33 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My App Login</title>
-  <script src="https://google.com" async></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DerLog — Personal Travel Planner</title>
+  <meta http-equiv="refresh" content="0; url=./DerLog-v19.html" />
+  <link rel="canonical" href="./DerLog-v19.html" />
 </head>
-<body>
-
-  <h2>Sign in to my app</h2>
-
-  <div id="g_id_onload"
-       data-client_id="110946969761-a1lbb3uv4n4qqf2258j5ne4uinli6i53.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse">
-  </div>
-
-  <div class="g_id_signin" data-type="standard"></div>
-
-  <p id="user-info"></p>
-
-  <script>
-    function handleCredentialResponse(response) {
-      // Decode the user info from Google's response
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      
-      // Show the user's name and email on the page
-      document.getElementById("user-info").innerText = 
-        "Welcome, " + payload.name + " (" + payload.email + ")!";
-    }
-  </script>
-
+<body style="margin:0;background:#040811">
+  <script>location.replace('./DerLog-v19.html');</script>
+  <p style="font-family:sans-serif;color:#fff;padding:16px">Opening <a style="color:#83F9FF" href="./DerLog-v19.html">DerLog</a>…</p>
 </body>
 </html>

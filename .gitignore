@@ -5,3 +5,7 @@ node_modules/
 derlog-photo-service/.venv/
 derlog-photo-service/__pycache__/
 derlog-photo-service/data/
+www/
+android/
+.gradle/
+
