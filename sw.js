@@ -1,5 +1,5 @@
 /* DerLog offline shell. Caches the app and its libraries after the first visit. */
-const VERSION='derlog-v12';
+const VERSION='derlog-v13';
 const CORE=[
   "./DerLog-v19.html",
   "./manifest.webmanifest",
