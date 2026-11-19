@@ -118,6 +118,16 @@ assert.equal(api.photoIsPhotograph('File:Angkor site map.svg','map of the temple
 assert.equal(api.photoIsPhotograph('File:Angkor Wat.jpg','AI generated sunset'),false);
 assert.equal(api.photoIsPhotograph('File:Angkor Wat sunrise.jpg','Temple at dawn, photograph'),true);
 assert.ok(api.osmInterestScore({kind:'Archaeological Site'})>api.osmInterestScore({kind:'Park'}));
+
+// The local Pinterest service returns photo objects; the slideshow still stores URLs.
+assert.deepEqual(
+  api.photoServiceUrls({photos:[{imageUrl:'https://i.pinimg.com/originals/a.jpg'},{imageUrl:'javascript:alert(1)'},{url:'https://i.pinimg.com/originals/b.jpg'},{imageUrl:'https://i.pinimg.com/originals/a.jpg'}]}),
+  ['https://i.pinimg.com/originals/a.jpg','https://i.pinimg.com/originals/b.jpg']
+);
+assert.deepEqual(api.photoServiceUrls(null),[]);
+assert.equal(api.photoServiceUrls({photos:['https://i.pinimg.com/originals/c.jpg']},5).length,1);
+assert.equal(api.photoServiceUrls({photos:[{imageUrl:'https://i.pinimg.com/a.jpg'},{imageUrl:'https://i.pinimg.com/b.jpg'}]},1).length,1);
+assert.equal(api.PHOTO_SERVICE_ORIGIN,'http://127.0.0.1:3211');
 assert.ok(api.APP_VERSION&&api.BUILD_NUMBER);
 
 console.log('DerLog fixtures passed');

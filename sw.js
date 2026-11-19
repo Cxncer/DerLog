@@ -1,5 +1,5 @@
 /* DerLog offline shell. Caches the app and its libraries after the first visit. */
-const VERSION='derlog-v8';
+const VERSION='derlog-v10';
 const CORE=[
   "./DerLog-v19.html",
   "./manifest.webmanifest",
@@ -40,6 +40,8 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
+  /* Photo results come from the local Pinterest service; never cache them. */
+  if(url.port==='3211'&&(url.hostname==='127.0.0.1'||url.hostname==='localhost'))return;
   if(/(^|.)(photon.komoot.io|overpass-api.de|overpass.kumi.systems|overpass.private.coffee|commons.wikimedia.org|api.openverse.org|en.wikipedia.org|accounts.google.com)$/.test(url.hostname))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
