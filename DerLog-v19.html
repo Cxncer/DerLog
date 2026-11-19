@@ -1422,7 +1422,7 @@ function osmInterestScore(place){
 /* Nearby sights from OpenStreetMap. Several public mirrors exist, so try each of them before giving up. */
 async function fetchOverpassPlaces(lat,lng,radius){
   const query=`[out:json][timeout:25];(node(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];way(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];relation(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];node(around:${radius},${lat},${lng})[name][historic];way(around:${radius},${lat},${lng})[name][historic];node(around:${radius},${lat},${lng})[name][leisure=park];way(around:${radius},${lat},${lng})[name][leisure=park];);out center tags 60;`;
-  const mirrors=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+  const mirrors=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.osm.ch/api/interpreter'];
   /* Ask every mirror at once and take the first usable answer, so one slow mirror cannot stall the tab. */
   const attempts=mirrors.map(mirror=>fetchWithTimeout(mirror,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)},9000)
     .then(res=>res.ok?res.json():null)
@@ -1969,7 +1969,7 @@ function migrateData(saved){
    defaultCurrency:CURRENCIES.some(c=>c.code===saved.defaultCurrency)?saved.defaultCurrency:DEFAULT_CURRENCY,
    cloud:saved.cloud&&typeof saved.cloud==='object'?saved.cloud:null,
    hasProfileHistory:Boolean(saved.hasProfileHistory||saved.onboarded),
-   destinationCache:saved.destinationCache&&typeof saved.destinationCache==='object'?saved.destinationCache:{}};
+   destinationCache:Object.fromEntries(Object.entries(saved.destinationCache&&typeof saved.destinationCache==='object'?saved.destinationCache:{}).filter(([key])=>key.startsWith('dest-v2:')))};
 }
 /* In-app dialogs: native alert()/confirm() are blocked in some embedded browsers. */
 let derDialogHandler=null;
@@ -2360,7 +2360,7 @@ function App(){
   const lat=Number(activeTrip.center&&activeTrip.center[0]),lng=Number(activeTrip.center&&activeTrip.center[1]);
   if(!Number.isFinite(lat)||!Number.isFinite(lng)){setDestinationPlaces([]);return}
   let cancelled=false;triedImagesRef.current=new Set();setDestinationLoading(true);setDestinationError('');setDestinationPlaces([]);
-  const cacheKey=`${activeTrip.id}:${lat.toFixed(2)},${lng.toFixed(2)}`;
+  const cacheKey=`dest-v2:${activeTrip.id}:${lat.toFixed(2)},${lng.toFixed(2)}`;
   const cached=(dataRef.current.destinationCache||{})[cacheKey];
   if(cached&&Array.isArray(cached.places)&&cached.places.length){
     setDestinationPlaces(cached.places);
