@@ -1,7 +1,7 @@
 // Builds www/, syncs it into the Android project and assembles a release-signed APK.
 // Capacitor and Gradle are started through node/java directly so the build also
 // works from a project path that contains spaces (no cmd.exe quoting involved).
-import { existsSync, readdirSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
@@ -50,6 +50,32 @@ if (!existsSync(ANDROID)) {
 
 run(process.execPath, [join(ROOT, "tools", "build-www.mjs")]);
 run(process.execPath, [join(ROOT, "node_modules", "@capacitor", "cli", "bin", "capacitor"), "sync", "android"]);
+
+// android/ is generated (and kept out of git), so the native sign-in sources live in
+// native/google-auth/ and are copied into the project on every release build. The same step
+// re-adds the Play services dependency if android/ was recreated with `cap add android`.
+const NATIVE_JAVA = join(ROOT, "native", "google-auth");
+if (existsSync(NATIVE_JAVA)) {
+  const appJava = join(ANDROID, "app", "src", "main", "java", "com", "derlog", "app");
+  mkdirSync(appJava, { recursive: true });
+  for (const file of ["GoogleAuthPlugin.java", "MainActivity.java"]) {
+    cpSync(join(NATIVE_JAVA, file), join(appJava, file));
+  }
+  const gradleFile = join(ANDROID, "app", "build.gradle");
+  if (existsSync(gradleFile)) {
+    let gradle = readFileSync(gradleFile, "utf8");
+    const dep = 'implementation "com.google.android.gms:play-services-auth:21.2.0"';
+    if (!gradle.includes(dep)) {
+      gradle = gradle.replace(
+        "    implementation project(':capacitor-cordova-android-plugins')",
+        `    implementation project(':capacitor-cordova-android-plugins')\n    ${dep}`
+      );
+      writeFileSync(gradleFile, gradle);
+      console.log("Added play-services-auth for native Google sign-in");
+    }
+  }
+}
+
 run(
   java,
   [

@@ -1,7 +1,7 @@
 # DerLog Android release build
 
 Project folder: `E:\Vibe Coding\DerLog`
-App id: `com.derlog.app` · version 1.23.1 (versionCode 2)
+App id: `com.derlog.app` · version 1.24.0 (versionCode 3)
 
 ## 1. What `www/` is
 
@@ -103,7 +103,35 @@ Open the **`android`** folder as the project (or `npm run android:open`).
   (`npm run icons` regenerates every mipmap size; those folders are generated, so re-run
   it if you recreate `android/`).
 
-## 7. Install on a phone
+## 7. Google sign-in inside the app
+
+The APK signs in through Google Play services (native account picker), not through a
+browser tab. Google refuses sign-in inside embedded web views (`disallowed_useragent`),
+which is why the old web-only flow opened Chrome and stalled on the already signed-in
+account.
+
+The bridge is `native/google-auth/GoogleAuthPlugin.java` (Capacitor plugin `GoogleAuth`,
+registered in `native/google-auth/MainActivity.java`). It asks for the Drive app-folder scope
+and returns a normal OAuth access token, so cloud sync works exactly as on the web.
+`android/` is generated and git-ignored, so `npm run android:release` copies both files
+into `android/app/src/main/java/com/derlog/app/` and re-adds `play-services-auth` to
+`android/app/build.gradle` when needed.
+
+One console step is required once, in the same Google Cloud project as the web client
+`110946969761-a1lbb3uv4n4qqf2258j5ne4uinli6i53`:
+
+1. APIs & Services → Credentials → **Create credentials → OAuth client ID → Android**.
+2. Package name: `com.derlog.app`.
+3. SHA-1 of the release keystore:
+   `6C:90:88:AD:78:61:23:E0:F7:88:6F:65:B9:0F:3A:5C:4C:B9:A5:73`
+4. If you also test debug builds from Android Studio, add a second Android client with
+the debug SHA-1 (`keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore`).
+
+Without the registered Android client Google returns status 10 and the app shows the
+"Register an Android OAuth client…" hint. If you ever ship through Play, also add the
+Play App Signing SHA-1 from the Play Console.
+
+## 8. Install on a phone
 
 Send `app-release.apk` (Drive, email, USB) and open it; allow "install unknown apps" for
 the app you launch it from. Play Protect may show a generic "app not scanned" card for
