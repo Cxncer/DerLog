@@ -1,7 +1,7 @@
 // One-time release signing setup: keystore + properties + Gradle signingConfig.
 // Safe to re-run; an existing keystore is never overwritten.
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
@@ -14,9 +14,17 @@ const GRADLE = join(ROOT, "android", "app", "build.gradle");
 const ALIAS = "derlog";
 
 const STUDIO_JBR = "C:/Program Files/Android/Android Studio/jbr";
-const javaHome = existsSync(join(STUDIO_JBR, "bin", "keytool.exe"))
+// Android Studio now bundles JDK 25, which AGP 8.7's lint step rejects. Prefer the
+// project-local JDK 21 in .toolchain/ so builds do not depend on the IDE's JDK.
+function projectJdk() {
+  const dir = join(ROOT, ".toolchain");
+  if (!existsSync(dir)) return "";
+  const found = readdirSync(dir).find((name) => /^jdk-?21/i.test(name) && existsSync(join(dir, name, "bin", "java.exe")));
+  return found ? join(dir, found).replace(/\\/g, "/") : "";
+}
+const javaHome = projectJdk() || (existsSync(join(STUDIO_JBR, "bin", "keytool.exe"))
   ? STUDIO_JBR
-  : process.env.JAVA_HOME || process.env.JDK_HOME || "";
+  : process.env.JAVA_HOME || process.env.JDK_HOME || "");
 
 if (!existsSync(GRADLE)) {
   console.error("android/app/build.gradle not found. Run: npx cap add android");
@@ -64,20 +72,25 @@ writeFileSync(
   `sdk.dir=${join(homedir(), "AppData", "Local", "Android", "Sdk").replace(/\\/g, "/")}\n`
 );
 
-if (existsSync(join(STUDIO_JBR, "bin", "java.exe"))) {
+if (javaHome && existsSync(join(javaHome, "bin", "java.exe"))) {
   const gradleProps = join(ROOT, "android", "gradle.properties");
   const current = existsSync(gradleProps) ? readFileSync(gradleProps, "utf8") : "";
-  if (!current.includes("org.gradle.java.home")) {
-    writeFileSync(gradleProps, current.replace(/\s*$/, "\n") + `org.gradle.java.home=${STUDIO_JBR}\n`);
-  }
+  const line = `org.gradle.java.home=${javaHome}`;
+  const next = /^org\.gradle\.java\.home=.*$/m.test(current)
+    ? current.replace(/^org\.gradle\.java\.home=.*$/m, line)
+    : current.replace(/\s*$/, "\n") + line + "\n";
+  writeFileSync(gradleProps, next);
+  console.log(`Gradle JDK: ${javaHome}`);
 }
 
 let gradle = readFileSync(GRADLE, "utf8");
 
-if (!gradle.includes("derlog-keystore.properties")) {
+const MARK = "// derlog-release-signing";
+if (!gradle.includes(MARK)) {
   gradle = gradle.replace(
     "android {",
-    `def keystoreProperties = new Properties()
+    `${MARK}
+def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('../signing/keystore.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))

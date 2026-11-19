@@ -3159,7 +3159,7 @@ try{
    window.__DERLOG_BOOT__=boot;
    const root=ReactDOM.createRoot(rootNode);
    root.render(<div id="derlog-app"><DerLogErrorBoundary><App/></DerLogErrorBoundary></div>);
-   if('serviceWorker' in navigator && /^https?:$/.test(location.protocol))navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Offline copy unavailable:',err));
+   if(!window.Capacitor && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol))navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Offline copy unavailable:',err));
  };
  bootDerLog().then(mount).catch(err=>{console.warn('DerLog boot fallback:',err);mount({data:migrateData(loadDerLogData()),bucketList:loadBucketList()})});
 }catch(error){

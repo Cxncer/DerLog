@@ -12,3 +12,6 @@ signing/
 *.jks
 *.keystore
 
+.toolchain/
+resources/
+.build-release.log

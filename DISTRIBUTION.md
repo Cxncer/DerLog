@@ -27,7 +27,8 @@ Any static host on HTTPS gives offline support and a real install prompt.
 
 **Netlify Drop**
 
-1. Run `npm run build` (creates `www/`).
+1. Run `npm run build` (creates `www/`, a self-contained bundle with React, Tailwind,
+   Leaflet, PDF.js and the fonts included).
 2. Open <https://app.netlify.com/drop> and drag the `www` folder in.
 3. Share the URL; testers use the browser's Install / Add to Home Screen action.
 
@@ -56,15 +57,15 @@ Steps:
 
 ```bash
 npm install
-npm run build          # produces www/
+npm run build          # produces www/ (offline bundle)
 npx cap add android    # one time, creates android/
-npm run android:sync   # rebuild www/ and copy it into the native project
+npm run android:sign   # keystore + signing config + Gradle JDK
 npm run android:open   # opens Android Studio
 ```
 
-In Android Studio press **Run ▶**. For a sharable file use **Build → Build Bundle(s) /
-APK(s) → Build APK(s)**; the debug APK lands in `android/app/build/outputs/apk/debug/`
-and can be sent to testers directly (they must allow installing from unknown sources).
+In Android Studio press **Run ▶**. For a sharable, properly signed file use
+`npm run android:release` — see `RELEASE.md` for details, verification and the keystore
+backup warning.
 
 Notes:
 
