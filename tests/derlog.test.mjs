@@ -87,6 +87,8 @@ assert.equal(api.convertMoney(32,'USD','USD',{USD:1,KHR:4000}),32);
 // Bucket list: a wish phrase must not become a street name in another country.
 assert.equal(api.cleanBucketQuery('Sunrise at Angkor Wat'),'Angkor Wat');
 assert.equal(api.cleanBucketQuery('Sunset at Angkor Wat'),'Angkor Wat');
+assert.equal(api.cleanBucketQuery('Sunset and Sunrise at Angkor Wat'),'Angkor Wat');
+assert.equal(api.cleanBucketQuery('Angkor Wat at sunrise'),'Angkor Wat');
 assert.equal(api.cleanBucketQuery('  Koh Rong  '),'Koh Rong');
 assert.ok(api.distanceKm([13.4125,103.867],[13.3622,103.8597])<10);
 assert.ok(api.distanceKm([13.4125,103.867],[48.5,-122.6])>1000);
