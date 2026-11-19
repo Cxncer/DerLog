@@ -74,6 +74,16 @@
     .theme-dark .profile-trips-card{color:#0B1220;background-image:radial-gradient(120% 140% at 100% 0%,rgba(27,84,255,.10),transparent 62%),linear-gradient(135deg,#ffffff 0%,#F7F9FC 55%,#EDF1F7 100%);background-color:#fff;border:1px solid rgba(255,255,255,.85);box-shadow:0 18px 42px rgba(0,0,0,.45)}
     .theme-dark .ptc-label{color:rgba(11,18,32,.5)}.theme-dark .ptc-sub{color:rgba(11,18,32,.55)}.theme-dark .ptc-icon{background:rgba(11,18,32,.06);border:1px solid rgba(11,18,32,.10)}
     .profile-row{border-radius:14px;transition:background-color .18s ease}.profile-row:hover{background:rgba(15,23,42,.035)}.theme-dark .profile-row:hover{background:rgba(255,255,255,.05)}
+    /* Dropdowns draw their own list, so the options follow the app theme on every phone. */
+    .dropdown-menu{background:#0B1526;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 44px rgba(0,0,0,.55);backdrop-filter:blur(18px);color:#fff;animation:dropIn .16s ease-out}
+    .dropdown-item{color:rgba(255,255,255,.82);transition:background-color .12s ease}
+    .dropdown-item:hover{background:rgba(255,255,255,.08)}
+    .dropdown-item.is-active{background:rgba(131,249,255,.12);color:#83F9FF;font-weight:600}
+    .theme-light .dropdown-menu{background:#fff;border:1px solid rgba(15,23,42,.10);box-shadow:0 18px 44px rgba(15,23,42,.18);color:#0F172A}
+    .theme-light .dropdown-item{color:#1F2937}
+    .theme-light .dropdown-item:hover{background:#F1F5F9}
+    .theme-light .dropdown-item.is-active{background:rgba(27,84,255,.08);color:#1B54FF}
+    @keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
     /* Welcome + sign-up */
     @keyframes wlcFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
     .wlc-fade{animation:wlcFade .6s cubic-bezier(.16,1,.3,1) both}
@@ -179,7 +189,10 @@ const ICON_PATHS={
   cloud:'M7.5 18.5a4 4 0 0 1-.4-8A5.5 5.5 0 0 1 18 9.4a4.5 4.5 0 0 1 .5 9.1|M12 12v5.5|M9.8 14.2 12 12l2.2 2.2',
   copy:'M9 9h9.5v9.5H9z|M6.5 15H5V5h10v1.5',
   home:'M3 10.5 12 3l9 7.5|M5.5 9.5V20h13V9.5|M10 20v-5.5h4V20',
-  check:'M20 6 9 17l-5-5'
+  check:'M20 6 9 17l-5-5',
+  chevronDown:'M5 9l7 7 7-7',
+  sun:'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z|M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+  moon:'M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z'
 };
 function Icon({name,size=18,className='',strokeWidth=1.8,fill='none'}){
   const d=ICON_PATHS[name];
@@ -396,6 +409,10 @@ function extractOcrDates(text,trip){
   while((m=md.exec(text)))push(isoFor(m[3]||fallbackYear,months[String(m[1]).toLowerCase().slice(0,3)],m[2]));
   return found;
 }
+function zeroDecimalCurrency(code){
+  const item=CURRENCIES.find(c=>c.code===String(code||'').toUpperCase());
+  return Boolean(item&&item.zero);
+}
 function extractOcrMoney(text,fallbackCode){
   const source=String(text||'');
   const tokens=[
@@ -415,16 +432,44 @@ function extractOcrMoney(text,fallbackCode){
     while((m=rx.exec(source)))amounts.push({value:parseFloat(String(m[1]).replace(/,/g,'')),index:m.index,currency:code});
   });
   /* Codes printed after the number, e.g. "130,000 KHR". */
-  const trailing=/([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(KHR|USD|EUR|GBP|JPY|VND|SGD|AUD)\b/gi;
+  /* Keep the code on the same line: "232,035\nKHR 23,204" is a new row, not a trailing code. */
+  const trailing=/([0-9][0-9,]*(?:\.[0-9]{1,2})?)[ \t]*(KHR|USD|EUR|GBP|JPY|VND|SGD|AUD)\b/gi;
   let m;
   while((m=trailing.exec(source)))amounts.push({value:parseFloat(m[1].replace(/,/g,'')),index:m.index,currency:m[2].toUpperCase()});
+  /* The same number can be matched twice (prefix and trailing code); keep one of each. */
+  const seenAmounts=[];
+  amounts.forEach(a=>{if(!seenAmounts.some(u=>u.currency===a.currency&&u.value===a.value))seenAmounts.push(a)});
+  amounts.length=0;
+  amounts.push(...seenAmounts);
   const fallback=String(fallbackCode||'USD').toUpperCase();
   if(!amounts.length){
     const bare=source.match(/\b(?:total|amount|paid|grand\s*total)[^\d]{0,14}([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i);
     return {value:bare?parseFloat(bare[1].replace(/,/g,'')):0,currency:fallback};
   }
-  const labelled=amounts.find(a=>/(total|amount|paid|due|price)/i.test(source.slice(Math.max(0,a.index-42),a.index)));
-  const chosen=labelled||amounts.slice().sort((a,b)=>b.value-a.value)[0];
+  /* Tickets print both the local total and an "approx. US$…" line, and OCR sometimes drops the
+     thousands separator. Read the label around each number instead of taking the biggest one. */
+  const scored=amounts.filter(a=>Number.isFinite(a.value)&&a.value>0).map(a=>{
+    const before=source.slice(Math.max(0,a.index-70),a.index);
+    const between=b=>source.slice(Math.min(a.index,b.index),Math.max(a.index,b.index));
+    let score=0;
+    if(/(grand\s*total|\btotal\b|amount\s*(?:due|paid)|to\s*pay|\bpaid\b|\bprice\b)/i.test(before))score+=5;
+    /* A local total printed beside a foreign one is the price people quote
+       ("approx. KHR 285,404" over "US$70.17"), not the line items above it. */
+    if(amounts.some(b=>b!==a&&b.currency!==a.currency&&Math.abs(b.index-a.index)<=32&&!/(approx|approximately|≈|equivalent|converted)/i.test(between(b))))score+=8;
+    if(/(approx|approximately|≈|~|equivalent|converted|exchange)/i.test(before))score+=10;
+    /* "70 riel" is always a misread of the US$ figure — no riel price is that small. */
+    if(zeroDecimalCurrency(a.currency)&&a.value<1000)score-=8;
+    if(String(a.currency)===fallback)score+=2;
+    return {...a,score};
+  });
+  if(!scored.length){
+    const bare=source.match(/\b(?:total|amount|paid|grand\s*total)[^\d]{0,14}([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i);
+    return {value:bare?parseFloat(bare[1].replace(/,/g,'')):0,currency:fallback};
+  }
+  const ranked=scored.sort((a,b)=>b.score-a.score||b.value-a.value);
+  /* A ticket priced in the trip's own currency is quoting that price. */
+  const inTrip=ranked.filter(a=>String(a.currency)===fallback&&a.score>=3);
+  const chosen=(inTrip.length?inTrip:ranked)[0];
   return {value:chosen.value,currency:chosen.currency};
 }
 function extractOcrCode(text){
@@ -711,32 +756,54 @@ async function lookupPlace(name){
     return {name:cleanPlaceTitle(p.name||p.city||p.locality||query),city:cleanPlaceTitle(p.city||p.locality||''),country,lat:Number(coords[1]),lng:Number(coords[0])};
   }catch(err){return null}
 }
+/* A place name must be the thing that matched: "Angkor Wat" may not resolve to a shop that
+   happens to sit closer to the hotel. */
+function placeNameScore(name,query){
+  const clean=v=>String(v||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  const a=clean(name),b=clean(query);
+  if(!a||!b)return 0;
+  if(a===b)return 4;
+  if(a.startsWith(b)||b.startsWith(a))return 3;
+  if(a.includes(b))return 2;
+  return 0;
+}
 async function lookupBucketPlace(title,trip){
   const clean=cleanBucketQuery(title);
   if(clean.length<2)return null;
   const center=Array.isArray(trip&&trip.center)&&trip.center.length===2?[Number(trip.center[0]),Number(trip.center[1])]:null;
   const near=trip&&(trip.location||trip.title)?String(trip.location||trip.title).split(',').slice(0,2).join(','):'';
+  const rank=list=>list.map(p=>({...p,nameScore:placeNameScore(p.name,clean),distance:center?distanceKm(center,[p.lat,p.lng]):0}))
+    .filter(p=>p.nameScore>0&&Number.isFinite(p.lat)&&Number.isFinite(p.lng))
+    .sort((a,b)=>b.nameScore-a.nameScore||a.distance-b.distance);
   const queries=near?[`${clean} ${near}`,clean]:[clean];
-  let best=null;
+  const pool=[];
   for(const query of queries){
     try{
-      const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=en`);
+      const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=8&lang=en`);
       if(!res.ok)continue;
       const json=await res.json();
       (json.features||[]).forEach(feature=>{
         const coords=feature&&feature.geometry&&feature.geometry.coordinates;
         if(!coords||coords.length!==2)return;
         const p=feature.properties||{};
-        const candidate={name:cleanPlaceTitle(p.name||p.locality||p.city||clean),city:cleanPlaceTitle(p.city||p.locality||p.county||''),region:p.state||'',country:p.country||'',lat:Number(coords[1]),lng:Number(coords[0])};
-        const distance=center?distanceKm(center,[candidate.lat,candidate.lng]):0;
-        const exact=String(candidate.name).toLowerCase()===clean.toLowerCase()?25:0;
-        const score=distance-exact;
-        if(!best||score<best.score)best={...candidate,score,distance};
+        pool.push({name:cleanPlaceTitle(p.name||p.locality||p.city||''),city:cleanPlaceTitle(p.city||p.locality||p.county||''),region:p.state||'',country:p.country||'',lat:Number(coords[1]),lng:Number(coords[0])});
       });
     }catch(err){}
-    if(best&&best.distance<150)break;
+    const named=rank(pool);
+    if(named.length&&named[0].nameScore>=3)return named[0];
   }
-  return best;
+  const named=rank(pool);
+  if(named.length)return named[0];
+  /* Photon often keeps temples and parks out of its index; Nominatim has them. */
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(near?`${clean}, ${near}`:clean)}`,{headers:{'Accept-Language':'en'}});
+    if(res.ok){
+      const json=await res.json();
+      const found=rank((json||[]).map(r=>({name:cleanPlaceTitle(String(r.display_name||'').split(',')[0]||clean),city:'',region:'',country:'',lat:parseFloat(r.lat),lng:parseFloat(r.lon)})));
+      if(found.length)return found[0];
+    }
+  }catch(err){}
+  return null;
 }
 function parseBookingOcr(text,trip,words,fileHint){
   const normalized=normalizeOcrText(text);
@@ -758,6 +825,11 @@ function parseBookingOcr(text,trip,words,fileHint){
     const checkIn=extractOcrDates(checkInRaw,trip)[0]||dates[0]||'';
     const laterDate=dates.find(d=>d>checkIn)||'';
     const checkOut=extractOcrDates(checkOutRaw,trip)[0]||laterDate;
+    /* Hotels print their desk times: "Check-in: from 14:00", "Check-out: until 12:00". */
+    const checkInLine=lines.find(l=>/check[\s.-]?in/i.test(l))||'';
+    const checkOutLine=lines.find(l=>/check[\s.-]?out/i.test(l))||'';
+    const checkInTime=extractOcrTimes(checkInLine)[0]||'';
+    const checkOutTime=extractOcrTimes(checkOutLine)[0]||'';
     /* Room names like "Cabana Twin With Balcony" sit directly above the guest name. */
     const roomType=labelValue(lines,/room\s*(?:type|no|number)|bed\s*type/i)||lineBefore(lines,/(?:guest\s*name|guest\s*details|number\s*of\s*guests)/i);
     /* Guest details, when the confirmation prints them. */
@@ -769,7 +841,7 @@ function parseBookingOcr(text,trip,words,fileHint){
     const phone=((phoneLine.match(/\+?\d[\d\s()-]{6,}\d/)||[])[0]||'').trim();
     return {type,stay:{
       property:guessProperty(lines),
-      checkIn,checkOut,roomType,
+      checkIn,checkOut,roomType,checkInTime,checkOutTime,
       guestName,guests,contact:phone||email,
       total:money.value?String(money.value):'',totalCurrency:money.value?money.currency:'',
       confirmationNumber:code||hintCode
@@ -860,6 +932,8 @@ function BookingCard({item,onEdit,onPreview,currency}){
   const total=Number(b.total!=null?b.total:item.cost)||0;
   const checkIn=b.checkIn||item.checkIn||'';
   const checkOut=b.checkOut||item.checkOut||'';
+  const checkInTime=b.checkInTime||item.checkInTime||'14:00';
+  const checkOutTime=b.checkOutTime||item.checkOutTime||'12:00';
   const nights=Number(b.nights||item.nights)||(checkIn&&checkOut?Math.max(0,daysBetween(checkIn,checkOut)):0);
   const dep=b.departureTime||(/^\d/.test(String(item.time||''))?item.time:'');
   const arr=b.arrivalTime||'';
@@ -888,6 +962,7 @@ function BookingCard({item,onEdit,onPreview,currency}){
             <div className="min-w-0">
               <div className="text-[9.5px] subtext-clr uppercase tracking-wider">Check in</div>
               <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkIn?formatDateStr(checkIn):'Not on ticket'}</div>
+              {checkIn?<div className="text-[10px] subtext-clr mt-0.5">from {to12Hour(checkInTime)}</div>:null}
             </div>
             <div className="flex flex-col items-center px-1 pt-1 text-[#1B54FF]">
               <span className="text-[9.5px] subtext-clr whitespace-nowrap mb-1">{nights?`${nights} ${nights===1?'night':'nights'}`:'Nights'}</span>
@@ -896,6 +971,7 @@ function BookingCard({item,onEdit,onPreview,currency}){
             <div className="min-w-0 text-right">
               <div className="text-[9.5px] subtext-clr uppercase tracking-wider">Check out</div>
               <div className="text-[12px] font-semibold leading-tight mt-0.5">{checkOut?formatDateStr(checkOut):'Not on ticket'}</div>
+              {checkOut?<div className="text-[10px] subtext-clr mt-0.5">until {to12Hour(checkOutTime)}</div>:null}
             </div>
           </div>
         ):(
@@ -998,6 +1074,8 @@ function BookingCreator({trip,initial,onSave,onClose}){
     roomType:sourceBooking.roomType||'',
     checkIn:sourceBooking.checkIn||(source&&source.checkIn)||trip.startDate||isoToday(),
     checkOut:sourceBooking.checkOut||(source&&source.checkOut)||addDaysISO(trip.startDate||isoToday(),1),
+    checkInTime:sourceBooking.checkInTime||(source&&source.checkInTime)||'14:00',
+    checkOutTime:sourceBooking.checkOutTime||(source&&source.checkOutTime)||'12:00',
     total:sourceBooking.total!=null?String(sourceBooking.total):(source&&source.cost?String(source.cost):''),
     confirmationNumber:sourceBooking.confirmationNumber||'',
     guestName:sourceBooking.guestName||'',
@@ -1083,7 +1161,7 @@ function BookingCreator({trip,initial,onSave,onClose}){
       const date=mode==='stay'?(s.checkIn||trip.startDate||isoToday()):(t.travelDate||trip.startDate||isoToday());
       const passengers=t.passengers.filter(p=>String(p.name||'').trim()).map(p=>({name:String(p.name).trim(),seat:String(p.seat||'').trim()}));
       const booking=mode==='stay'
-        ?{type:'stay',property:s.property.trim(),roomType:s.roomType.trim(),checkIn:s.checkIn,checkOut:s.checkOut,nights,
+        ?{type:'stay',property:s.property.trim(),roomType:s.roomType.trim(),checkIn:s.checkIn,checkOut:s.checkOut,checkInTime:s.checkInTime||'14:00',checkOutTime:s.checkOutTime||'12:00',nights,
           total,confirmationNumber:s.confirmationNumber.trim(),guestName:s.guestName.trim(),guests:Number(s.guests)||0,contact:s.contact.trim(),source:attachment?'scan':'manual'}
         :{type:'transport',operator:t.operator.trim(),vehicleType:(t.vehicleType||'').trim(),origin:t.origin.trim(),destination:t.destination.trim(),travelDate:t.travelDate,
           departureTime:t.departureTime,arrivalTime:t.arrivalTime||(t.departureTime&&duration?shiftTime(t.departureTime,duration):''),
@@ -1109,7 +1187,7 @@ function BookingCreator({trip,initial,onSave,onClose}){
         lat,lng,
         attachment,
         booking,
-        ...(mode==='stay'?{checkIn:booking.checkIn,checkOut:booking.checkOut,nights:booking.nights}:{})
+        ...(mode==='stay'?{checkIn:booking.checkIn,checkOut:booking.checkOut,checkInTime:booking.checkInTime,checkOutTime:booking.checkOutTime,nights:booking.nights}:{})
       };
       onSave(item);
     }finally{setBusy(false)}
@@ -1212,6 +1290,14 @@ function BookingCreator({trip,initial,onSave,onClose}){
               </label>
               <label className="block text-[10px] subtext-clr">Check out
                 <input type="date" min={s.checkIn} value={s.checkOut} onChange={e=>setS(v=>({...v,checkOut:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-[10px] subtext-clr">Check-in time
+                <input type="time" value={s.checkInTime||'14:00'} onChange={e=>setS(v=>({...v,checkInTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
+              </label>
+              <label className="block text-[10px] subtext-clr">Check-out time
+                <input type="time" value={s.checkOutTime||'12:00'} onChange={e=>setS(v=>({...v,checkOutTime:e.target.value}))} className="input-bg w-full rounded-lg px-2.5 py-2 mt-1 text-[11.5px] outline-none"/>
               </label>
             </div>
             <div className="flex items-center justify-between rounded-lg px-2.5 py-2 glass-pill text-[11px]">
@@ -1888,7 +1974,7 @@ function OnboardingScreen({data,googleClientId,onComplete}){
 
 /* ---------------------------------------------------------------- schema, currency, dialogs */
 const SCHEMA_VERSION=4;
-const APP_VERSION='1.20.0';
+const APP_VERSION='1.21.0';
 const BUILD_NUMBER='2026.11.19';
 const DEFAULT_CURRENCY='USD';
 const DEFAULT_GOOGLE_CLIENT_ID='110946969761-a1lbb3uv4n4qqf2258j5ne4uinli6i53.apps.googleusercontent.com';
@@ -2177,7 +2263,7 @@ function TripActionsSheet({trip,onClose,onSave,onDuplicate,onToggleComplete,onEx
    <div className="flex justify-between items-center"><div><h3 className="text-sm font-semibold">This trip</h3><p className="text-[11.5px] subtext-clr mt-0.5">Rename, re-currency or hand it to your calendar</p></div><button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>
    <label className="block text-[11.5px] subtext-clr">Trip name<input value={title} onChange={e=>setTitle(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1" placeholder="Siem Reap"/></label>
    <label className="block text-[11.5px] subtext-clr">Location<input value={location} onChange={e=>setLocation(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1" placeholder="Siem Reap, Cambodia"/></label>
-   <label className="block text-[11.5px] subtext-clr">Trip currency<select value={currency} onChange={e=>setCurrency(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code} · {c.label}</option>)}</select></label>
+   <label className="block text-[11.5px] subtext-clr">Trip currency<DropSelect value={currency} onChange={setCurrency} options={CURRENCY_OPTIONS_LONG} ariaLabel="Trip currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
    <button type="submit" className="w-full bg-[#1B54FF] text-white text-xs font-semibold py-3 rounded-full">Save trip details</button>
    <div className="grid grid-cols-2 gap-2 pt-1">
     <button type="button" onClick={onExportIcs} className="glass-pill rounded-xl py-2.5 text-[11.5px] font-medium inline-flex items-center justify-center gap-1.5"><Icon name="calendar" size={12}/>Calendar (.ics)</button>
@@ -2215,6 +2301,50 @@ function SearchSheet({trips,activeTripId,bucketList,onPickTrip,onPickItem,onPick
  </div>;
 }
 
+/* ---------------------------------------------------------------- dropdowns */
+const CURRENCY_OPTIONS=CURRENCIES.map(c=>({value:c.code,label:c.code}));
+const CURRENCY_OPTIONS_LONG=CURRENCIES.map(c=>({value:c.code,label:`${c.code} · ${c.label}`}));
+const PLAN_SORT_OPTIONS=[
+ {value:'earliest',label:'Earliest first'},
+ {value:'priceLow',label:'Price: low to high'},
+ {value:'priceHigh',label:'Price: high to low'},
+ {value:'recent',label:'Recently added'}
+];
+function DropSelect({value,onChange,options,ariaLabel,className='',buttonClass='',align='left'}){
+ const [open,setOpen]=useState(false),wrap=useRef(null);
+ useEffect(()=>{
+  if(!open)return;
+  const away=e=>{if(wrap.current&&!wrap.current.contains(e.target))setOpen(false)};
+  const esc=e=>{if(e.key==='Escape')setOpen(false)};
+  document.addEventListener('mousedown',away);document.addEventListener('keydown',esc);
+  return()=>{document.removeEventListener('mousedown',away);document.removeEventListener('keydown',esc)};
+ },[open]);
+ const list=options||[],current=list.find(o=>o.value===value)||list[0]||{};
+ return <div ref={wrap} className={`relative ${className}`}>
+  <button type="button" aria-label={ariaLabel} aria-haspopup="listbox" aria-expanded={open} onClick={()=>setOpen(v=>!v)} className={`w-full inline-flex items-center justify-between gap-1.5 text-left ${buttonClass}`}>
+   <span className="truncate">{current.label||current.value||''}</span>
+   <span className={`shrink-0 opacity-60 transition-transform ${open?'rotate-180':''}`}><Icon name="chevronDown" size={11}/></span>
+  </button>
+  {open&&<div role="listbox" className={`dropdown-menu absolute z-[95] mt-1.5 min-w-[160px] max-h-60 overflow-y-auto no-scrollbar rounded-2xl p-1 ${align==='right'?'right-0':'left-0'}`}>
+   {list.map(o=><button type="button" role="option" aria-selected={o.value===value} key={o.value} onClick={()=>{onChange(o.value);setOpen(false)}} className={`dropdown-item w-full text-left rounded-xl px-2.5 py-2 text-[11.5px] inline-flex items-center justify-between gap-2 ${o.value===value?'is-active':''}`}><span className="truncate">{o.label}</span>{o.value===value?<span className="shrink-0"><Icon name="check" size={11}/></span>:null}</button>)}
+  </div>}
+ </div>;
+}
+/* Local money is quoted in the round amounts people actually hand over — a $1 bill is 4,000 riel. */
+const LOCAL_AMOUNT={USD:1,EUR:1,GBP:1,KHR:4000,JPY:100,VND:25000,SGD:10,AUD:10};
+function formatRate(value){
+ const v=Number(value)||0;
+ const digits=v>=1000?0:v>=1?2:v>=10?3:4;
+ return v.toLocaleString('en-US',{maximumFractionDigits:digits});
+}
+/* Always print the direction that reads like a price: 1 USD = 4,100 KHR, not 1 KHR = 0.0002 USD. */
+function rateLines(from,to,rates){
+ const unit=convertMoney(1,from,to,rates);
+ if(!(unit>0))return {line:'',sample:''};
+ const line=unit>=1?`1 ${from} = ${formatRate(unit)} ${to}`:`1 ${to} = ${formatRate(convertMoney(1,to,from,rates))} ${from}`;
+ const sample=LOCAL_AMOUNT[from]||1;
+ return {line,sample:`${money(sample,{currency:from})} ≈ ${money(convertMoney(sample,from,to,rates),{currency:to})}`};
+}
 /* ---------------------------------------------------------------- currency calculator */
 function CurrencyCalculator({baseCurrency}){
  const [rates,setRates]=useState(FX_FALLBACK);
@@ -2224,22 +2354,22 @@ function CurrencyCalculator({baseCurrency}){
  useEffect(()=>{let live=true;getFxRates().then(r=>{if(live&&r)setRates(r)}).catch(()=>{});return()=>{live=false}},[]);
  const value=Number(amount)||0;
  const result=convertMoney(value,from,to,rates);
- const unit=convertMoney(1,from,to,rates);
- const decimals=4;
+ const rate=rateLines(from,to,rates);
  return <section className="space-y-3">
   <div className="glass-card rounded-[22px] p-4 space-y-3">
    <label className="block text-[11px] subtext-clr">Amount
     <input type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} className="input-bg w-full rounded-xl px-3.5 py-3 mt-1 text-lg font-medium outline-none"/>
    </label>
    <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-    <label className="block text-[11px] subtext-clr">From<select value={from} onChange={e=>setFrom(e.target.value)} className="input-bg w-full rounded-xl px-2.5 py-2.5 mt-1 text-[11.5px] outline-none">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code} · {c.label}</option>)}</select></label>
+    <label className="block text-[11px] subtext-clr">From<DropSelect value={from} onChange={setFrom} options={CURRENCY_OPTIONS_LONG} ariaLabel="From currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-2.5 py-2.5 text-[11.5px]"/></label>
     <button type="button" onClick={()=>{const a=from;setFrom(to);setTo(a)}} aria-label="Swap currencies" className="mb-1 w-8 h-8 rounded-full glass-pill flex items-center justify-center shrink-0"><Icon name="refresh" size={13}/></button>
-    <label className="block text-[11px] subtext-clr">To<select value={to} onChange={e=>setTo(e.target.value)} className="input-bg w-full rounded-xl px-2.5 py-2.5 mt-1 text-[11.5px] outline-none">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code} · {c.label}</option>)}</select></label>
+    <label className="block text-[11px] subtext-clr">To<DropSelect value={to} onChange={setTo} options={CURRENCY_OPTIONS_LONG} ariaLabel="To currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-2.5 py-2.5 text-[11.5px]"/></label>
    </div>
    <div className="rounded-2xl p-3.5" style={{background:'rgba(27,84,255,.10)',border:'1px solid rgba(27,84,255,.28)'}}>
     <div className="text-[10px] subtext-clr uppercase tracking-wider">{money(value,{currency:from})} equals</div>
     <div className="text-2xl font-semibold text-[#FEB122] mt-1 break-words">{money(result,{currency:to})}</div>
-    <div className="text-[10.5px] subtext-clr mt-1">1 {from} = {Number(unit.toFixed(decimals)).toLocaleString('en-US',{maximumFractionDigits:decimals})} {to}</div>
+    <div className="text-[10.5px] subtext-clr mt-1">{rate.line}</div>
+    {rate.sample?<div className="text-[11px] subtext-clr mt-0.5">Standard rate · {rate.sample}</div>:null}
    </div>
   </div>
   <p className="text-[10.5px] subtext-clr leading-relaxed px-1">Mid-market rates, refreshed every 12 hours. Card fees and money-changer rates will differ slightly.</p>
@@ -2457,13 +2587,13 @@ function App(){
  /* Bucket list lookups borrow the trip as context and prefer the nearest real match, so
     "Sunrise at Angkor Wat" cannot land on a same-named street in another country. */
  useEffect(()=>{
-  const pending=bucketList.filter(b=>b.resolution!=='v2');
+  const pending=bucketList.filter(b=>b.resolution!=='v3');
   if(!pending.length)return;
   let cancelled=false;
   (async()=>{
    const results=await Promise.all(pending.map(async b=>{
     const hit=await lookupBucketPlace(b.title,activeTrip);
-    return {id:b.id,resolvedPlace:hit?{name:hit.name,city:hit.city,region:hit.region,country:hit.country,lat:hit.lat,lng:hit.lng}:null,lookupFailed:!hit,resolution:'v2'};
+    return {id:b.id,resolvedPlace:hit?{name:hit.name,city:hit.city,region:hit.region,country:hit.country,lat:hit.lat,lng:hit.lng}:null,lookupFailed:!hit,resolution:'v3'};
    }));
    if(!cancelled)setBucketList(v=>v.map(b=>{const r=results.find(x=>x.id===b.id);return r?{...b,...r}:b}));
   })();
@@ -2656,10 +2786,14 @@ function App(){
      </div>:<div className="glass-card rounded-[18px] p-4 text-xs subtext-clr">This trip is ready — add your first plan and the timeline starts here.</div>}
     </div>
    </div>}
-   {activeTab==='plan'&&!showFullMap&&!showAddModal&&<div className="space-y-3.5"><div className="flex justify-between items-end gap-2"><div className="min-w-0"><h1 className="app-section-title">Planning</h1><p className="text-xs subtext-clr">{activeTrip.title} • {filteredItems.length} stops</p><button type="button" onClick={()=>{setEditTripStart(activeTrip.startDate||'');setEditTripEnd(activeTrip.endDate||'');setShowTripDatesEditor(true)}} className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] accent-txt"><Icon name="calendar" size={11}/>{formatDateRange(activeTrip.startDate,activeTrip.endDate)} <Icon name="edit" size={10}/></button></div><div className="flex items-center gap-1.5 shrink-0"><select value={planSort} onChange={e=>setPlanSort(e.target.value)} aria-label="Sort plan" title="Sort plan" className="glass-pill text-[11.5px] accent-txt pl-2.5 pr-1 py-1.5 rounded-full outline-none"><option value="earliest">Earliest</option><option value="priceLow">Price: low</option><option value="priceHigh">Price: high</option><option value="recent">Recent</option></select><button onClick={()=>setShowTripEditor(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="edit" size={11}/>Trip</button><button onClick={()=>setShowBookings(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="ticket" size={11}/>Booking{bookingItems.length?` · ${bookingItems.length}`:''}</button></div></div>
+   {activeTab==='plan'&&!showFullMap&&!showAddModal&&<div className="space-y-3.5"><div className="flex justify-between items-end gap-2"><div className="min-w-0"><h1 className="app-section-title">Planning</h1><p className="text-xs subtext-clr">{activeTrip.title} • {filteredItems.length} stops</p><button type="button" onClick={()=>{setEditTripStart(activeTrip.startDate||'');setEditTripEnd(activeTrip.endDate||'');setShowTripDatesEditor(true)}} className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] accent-txt"><Icon name="calendar" size={11}/>{formatDateRange(activeTrip.startDate,activeTrip.endDate)} <Icon name="edit" size={10}/></button></div><div className="flex items-center gap-1.5 shrink-0"><button onClick={toggleTheme} aria-label="Switch between light and dark mode" title="Light / dark" className="glass-pill w-7 h-7 rounded-full flex items-center justify-center accent-txt"><Icon name={data.theme==='dark'?'sun':'moon'} size={12}/></button><button onClick={()=>setShowTripEditor(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="edit" size={11}/>Trip</button><button onClick={()=>setShowBookings(true)} className="glass-pill text-[11.5px] accent-txt px-3 py-1.5 rounded-full inline-flex items-center gap-1"><Icon name="ticket" size={11}/>Booking{bookingItems.length?` · ${bookingItems.length}`:''}</button></div></div>
     <div className="day-tabs gap-2 py-2">{dayChips.map(c=><button key={c} onClick={()=>setSelectedDayFilter(c)} className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${selectedDayFilter===c?'bg-[#1B54FF] text-white':'glass-pill opacity-75'}`}>{c}</button>)}</div>
     {!showTripSwitcher&&!showTripEditor&&!showBudgetModal&&!showTripDatesEditor&&!previewAttachment&&!selectedDestinationDetail&&!showBookings&&!bookingEditor&&<div onClick={()=>setShowFullMap(true)} className="cursor-pointer"><InteractiveMap items={filteredItems} center={activeTrip.center} heightClass="h-40"/><div className="text-[11px] subtext-clr text-center mt-1">Tap map to open full view & search places</div></div>}
-    <div className="space-y-2.5 pt-1">{filteredItems.length===0?<div className="glass-card rounded-[22px] p-6 text-center"><p className="text-xs font-medium subtext-clr">No stops found for this filter.</p></div>:filteredItems.map(i=><div key={i.id} className="glass-card rounded-[20px] p-3.5 space-y-2"><div className="flex justify-between items-start"><div className="min-w-0"><div className="flex items-center gap-2 mb-0.5"><span className="text-[11px] font-medium accent-txt">{i.category}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 opacity-80">{i.day}</span>{i.booking&&<span className="text-[10px] accent-txt inline-flex items-center gap-1"><Icon name="ticket" size={9}/>Pass</span>}</div><div className="text-sm font-medium leading-snug">{i.title}</div><div className="text-[11px] subtext-clr mt-0.5">{i.category==='Rental'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)}${i.rentalStartTime?` ${to12Hour(i.rentalStartTime)}`:''} → ${formatDateStr(i.checkOut)}${i.rentalEndTime?` ${to12Hour(i.rentalEndTime)}`:''}`:i.category==='Stay'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)} → ${formatDateStr(i.checkOut)} • ${i.nights||0} nights`:i.category==='Expense'?formatDateStr(i.date||''):`${i.time}${i.notes?` • ${i.notes}`:''}`}</div></div><div className="flex flex-col items-end shrink-0"><span className="text-xs font-medium text-[#FEB122]">{money(i.cost,activeTrip)}</span>{i.costOriginal&&i.costOriginal.currency&&i.costOriginal.currency!==currencyOf(activeTrip).code?<span className="text-[9.5px] subtext-clr mt-0.5 whitespace-nowrap">from {currencyOf({currency:i.costOriginal.currency}).symbol}{Number(i.costOriginal.amount||0).toLocaleString('en-US')} {i.costOriginal.currency}</span>:null}<div className="flex items-center gap-2 mt-2"><button onClick={()=>handleMoveItem(i.id)} className="text-[10px] opacity-50 hover:text-[#1B54FF]">Move</button><span className="text-[10px] opacity-25">·</span><button onClick={()=>handleDeleteItem(i.id)} className="text-[10px] opacity-50 hover:text-red-400">Remove</button></div></div></div>{i.attachment&&i.attachment.value&&<div className="pt-2 border-t border-white/10 flex items-center justify-between"><button onClick={()=>setPreviewAttachment(i.attachment)} className="inline-flex items-center gap-1.5 bg-[#1B54FF]/20 border border-[#1B54FF]/40 accent-txt text-[11.5px] px-3 py-1 rounded-full"><Icon name="image" size={12}/><span className="font-medium">{i.attachment.label||'Photo'}</span></button><span className="text-[10px] opacity-40 uppercase tracking-widest">Photo</span></div>}</div>)}</div>
+    <div className="flex items-center justify-between gap-2 pt-0.5">
+      <span className="text-[11px] subtext-clr">Sort by</span>
+      <DropSelect value={planSort} onChange={setPlanSort} options={PLAN_SORT_OPTIONS} ariaLabel="Sort plan" className="w-[158px]" buttonClass="glass-pill rounded-full px-3 py-1.5 text-[11.5px] accent-txt" align="right"/>
+    </div>
+    <div className="space-y-2.5 pt-1">{filteredItems.length===0?<div className="glass-card rounded-[22px] p-6 text-center"><p className="text-xs font-medium subtext-clr">No stops found for this filter.</p></div>:filteredItems.map(i=><div key={i.id} className="glass-card rounded-[20px] p-3.5 space-y-2"><div className="flex justify-between items-start"><div className="min-w-0"><div className="flex items-center gap-2 mb-0.5"><span className="text-[11px] font-medium accent-txt">{i.category}</span><span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 opacity-80">{i.day}</span>{i.booking&&<span className="text-[10px] accent-txt inline-flex items-center gap-1"><Icon name="ticket" size={9}/>Pass</span>}</div><div className="text-sm font-medium leading-snug">{i.title}</div><div className="text-[11px] subtext-clr mt-0.5">{i.category==='Rental'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)}${i.rentalStartTime?` ${to12Hour(i.rentalStartTime)}`:''} → ${formatDateStr(i.checkOut)}${i.rentalEndTime?` ${to12Hour(i.rentalEndTime)}`:''}`:i.category==='Stay'&&i.checkIn&&i.checkOut?`${formatDateStr(i.checkIn)} ${to12Hour(i.checkInTime||'14:00')} → ${formatDateStr(i.checkOut)} ${to12Hour(i.checkOutTime||'12:00')} • ${i.nights||0} ${i.nights===1?'night':'nights'}`:i.category==='Expense'?formatDateStr(i.date||''):`${i.time}${i.notes?` • ${i.notes}`:''}`}</div></div><div className="flex flex-col items-end shrink-0"><span className="text-xs font-medium text-[#FEB122]">{money(i.cost,activeTrip)}</span>{i.costOriginal&&i.costOriginal.currency&&i.costOriginal.currency!==currencyOf(activeTrip).code?<span className="text-[9.5px] subtext-clr mt-0.5 whitespace-nowrap">from {currencyOf({currency:i.costOriginal.currency}).symbol}{Number(i.costOriginal.amount||0).toLocaleString('en-US')} {i.costOriginal.currency}</span>:null}<div className="flex items-center gap-2 mt-2"><button onClick={()=>handleMoveItem(i.id)} className="text-[10px] opacity-50 hover:text-[#1B54FF]">Move</button><span className="text-[10px] opacity-25">·</span><button onClick={()=>handleDeleteItem(i.id)} className="text-[10px] opacity-50 hover:text-red-400">Remove</button></div></div></div>{i.attachment&&i.attachment.value&&<div className="pt-2 border-t border-white/10 flex items-center justify-between"><button onClick={()=>setPreviewAttachment(i.attachment)} className="inline-flex items-center gap-1.5 bg-[#1B54FF]/20 border border-[#1B54FF]/40 accent-txt text-[11.5px] px-3 py-1 rounded-full"><Icon name="image" size={12}/><span className="font-medium">{i.attachment.label||'Photo'}</span></button><span className="text-[10px] opacity-40 uppercase tracking-widest">Photo</span></div>}</div>)}</div>
    </div>}
    {activeTab==='budget'&&<div className="space-y-4"><div className="pt-1"><h1 className="app-section-title">Budget &amp; Expenses</h1><p className="text-xs subtext-clr">{activeTrip.title}</p></div><div className="glass-card rounded-[24px] p-4 space-y-4"><div className="grid grid-cols-3 gap-2"><div><div className="text-xl font-medium">{activeTrip.daysCount}</div><div className="text-[11px] subtext-clr">{activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} nights</div></div><div><div className="text-xl font-medium accent-txt">{activeTrip.items.length}</div><div className="text-[11px] subtext-clr">Stops</div></div><div><div className="text-xl font-medium text-[#FEB122]">{money(totalSpent,activeTrip)}</div><div className="text-[11px] subtext-clr">Spent</div></div></div><div><div className="w-full h-2 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-[#1B54FF] via-[#83F9FF] to-[#FEB122] rounded-full" style={{width:`${budgetPercent}%`}}/></div><div onClick={()=>{setEditBudgetVal(activeTrip.budget);setShowBudgetModal(true)}} className="flex justify-between items-center text-xs opacity-90 mt-2 cursor-pointer"><span className="font-medium subtext-clr">Used: {budgetPercent}%</span><span className="font-medium bg-white/5 border border-white/10 px-3 py-1 rounded-full inline-flex items-center gap-1.5"><Icon name="edit" size={11}/> {money(activeTrip.budget,activeTrip,true)} Total Limit</span></div></div></div>
     <div className="space-y-2"><h2 className="text-xs font-medium opacity-70 uppercase tracking-wider">Category Breakdown</h2>{['Transport','Stay','Rental','Food','Explore','Expense'].map(cat=>{const group=activeTrip.items.filter(i=>i.category===cat);const sum=group.reduce((s,i)=>s+(Number(i.cost)||0),0);return <button type="button" key={cat} onClick={()=>setBudgetCategory(cat)} className="glass-card rounded-[18px] p-3.5 w-full flex justify-between items-center gap-2 text-left"><div className="min-w-0"><div className="text-sm font-medium">{cat}</div><div className="text-[11px] subtext-clr">{group.length} {group.length===1?'item':'items'}</div></div><div className="flex items-center gap-1.5 shrink-0"><div className="text-sm font-medium text-[#FEB122]">{money(sum,activeTrip)}</div><span className="opacity-30"><Icon name="chevronRight" size={12}/></span></div></button>})}</div>
@@ -2731,8 +2865,8 @@ function App(){
      {profilePage==='settings'&&<section className="glass-card rounded-[22px] p-5 space-y-4"><div><h2 className="app-section-title">Settings</h2><p className="text-[11.5px] subtext-clr mt-1">Preferences for this device.</p></div>
       <div className="space-y-2">
        <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">Trip money</div>
-       <label className="block text-[11px] subtext-clr">Trip currency <span className="opacity-60">· {activeTrip.title}</span><select value={activeTrip.currency||DEFAULT_CURRENCY} onChange={e=>updateActiveTrip({currency:e.target.value})} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code} · {c.label}</option>)}</select></label>
-       <label className="block text-[11px] subtext-clr">Default currency for new trips<select value={data.defaultCurrency||DEFAULT_CURRENCY} onChange={e=>setData(d=>({...d,defaultCurrency:e.target.value}))} className="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs outline-none mt-1">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code} · {c.label}</option>)}</select></label>
+       <label className="block text-[11px] subtext-clr">Trip currency <span className="opacity-60">· {activeTrip.title}</span><DropSelect value={activeTrip.currency||DEFAULT_CURRENCY} onChange={v=>updateActiveTrip({currency:v})} options={CURRENCY_OPTIONS_LONG} ariaLabel="Trip currency" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
+       <label className="block text-[11px] subtext-clr">Default currency for new trips<DropSelect value={data.defaultCurrency||DEFAULT_CURRENCY} onChange={v=>setData(d=>({...d,defaultCurrency:v}))} options={CURRENCY_OPTIONS_LONG} ariaLabel="Default currency for new trips" className="mt-1" buttonClass="input-bg w-full rounded-xl px-3.5 py-2.5 text-xs"/></label>
       </div>
       <div className="space-y-2 pt-3 border-t border-white/10">
        <div className="text-[10px] uppercase tracking-[0.16em] subtext-clr">Appearance</div>
@@ -2787,7 +2921,7 @@ function App(){
     {newCategory!=='Expense'&&newCategory!=='Rental'&&<label className="block text-[11px] subtext-clr">Time<input type="time" value={newTime} onChange={e=>setNewTime(e.target.value)} className="input-bg w-full rounded-xl px-3 py-2.5 mt-1 text-[11.5px] outline-none"/></label>}
     <div className="space-y-1.5">
      <div className="flex items-center justify-between"><label className="text-[11px] subtext-clr">Cost</label><span className="text-[10px] subtext-clr">Paid in any currency</span></div>
-     <div className="flex gap-2"><select value={costCurrency} onChange={e=>setCostCurrency(e.target.value)} aria-label="Cost currency" className="input-bg w-[92px] shrink-0 rounded-xl px-2 py-2.5 text-[11.5px] outline-none">{CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.code}</option>)}</select><input type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" value={newCost} onChange={e=>setNewCost(e.target.value)} className="input-bg flex-1 min-w-0 rounded-xl px-3.5 py-2.5 text-xs outline-none"/></div>
+     <div className="flex gap-2"><DropSelect value={costCurrency} onChange={setCostCurrency} options={CURRENCY_OPTIONS} ariaLabel="Cost currency" className="w-[92px] shrink-0" buttonClass="input-bg rounded-xl px-2 py-2.5 text-[11.5px]"/><input type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" value={newCost} onChange={e=>setNewCost(e.target.value)} className="input-bg flex-1 min-w-0 rounded-xl px-3.5 py-2.5 text-xs outline-none"/></div>
      {newCostConverted?<div className="text-[10.5px] accent-txt leading-snug">≈ {money(newCostConverted,activeTrip)} · converted from {costCurrency} {Number(newCost).toLocaleString('en-US')}</div>:<div className="text-[10px] subtext-clr">{currencyOf(activeTrip).code} is this trip's currency</div>}
     </div>
    </div>
@@ -2822,7 +2956,7 @@ function App(){
   {previewAttachment&&<div className="absolute inset-0 bg-black/85 backdrop-blur-md z-[90] flex items-center justify-center p-5"><div className="modal-bg w-full max-w-[320px] border rounded-[28px] p-4 space-y-3"><div className="flex justify-between items-center"><span className="text-xs font-medium accent-txt inline-flex items-center gap-1.5"><Icon name={previewAttachment.type==='pdf'?'fileText':'image'} size={12}/>{previewAttachment.label||'Booking'}</span><button onClick={()=>setPreviewAttachment(null)} aria-label="Close image" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>{previewAttachment.type==='pdf'?<div className="space-y-2"><iframe src={previewAttachment.value} title="Booking PDF" className="w-full h-72 rounded-2xl bg-white border border-white/10"/><a href={previewAttachment.value} download={previewAttachment.name||'booking.pdf'} className="block text-center glass-pill rounded-full py-2.5 text-[11.5px] accent-txt">Open or download PDF</a></div>:<div className="rounded-2xl overflow-hidden max-h-80 flex justify-center bg-black border border-white/10"><img src={previewAttachment.value} alt="Booking attachment" className="object-contain max-h-80 w-full"/></div>}</div></div>}
  </div>
 }
-try{window.__DERLOG_TEST__={decodeGoogleCredential,parseBookingOcr,extractOcrPassengers,extractOcrCode,extractOcrMoney,normalizeOcrText,migrateData,buildICS,money,currencyOf,convertMoney,isMediaPayload,blankTrip,distanceKm,cleanBucketQuery,osmInterestScore,photoIsPhotograph,APP_VERSION,BUILD_NUMBER}}catch(err){}
+try{window.__DERLOG_TEST__={decodeGoogleCredential,parseBookingOcr,extractOcrPassengers,extractOcrCode,extractOcrMoney,normalizeOcrText,migrateData,buildICS,money,currencyOf,convertMoney,isMediaPayload,blankTrip,distanceKm,cleanBucketQuery,placeNameScore,rateLines,osmInterestScore,photoIsPhotograph,APP_VERSION,BUILD_NUMBER}}catch(err){}
 class DerLogErrorBoundary extends React.Component {
  constructor(props){super(props);this.state={error:null};}
  static getDerivedStateFromError(error){return {error};}

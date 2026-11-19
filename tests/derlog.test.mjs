@@ -82,6 +82,18 @@ const scannedUsd=api.extractOcrMoney('Total US$ 32.00','KHR');
 assert.equal(scannedUsd.currency,'USD');
 assert.equal(scannedUsd.value,32);
 assert.equal(Number(api.convertMoney(130000,'KHR','USD',{USD:1,KHR:4000}).toFixed(2)),32.5);
+// A stay confirmation prints line items, then the local grand total with an "approx. US$…" line.
+const stayTotal=api.extractOcrMoney('TOTAL\nKHR 232,035\nKHR 23,204\nKHR 25,524\nKHR 4,641\napprox. KHR 285,404\nUS$70.17','KHR');
+assert.equal(stayTotal.currency,'KHR');
+assert.equal(stayTotal.value,285404);
+const stayTotalUsd=api.extractOcrMoney('TOTAL\napprox. KHR 285,404\nUS$70.17','USD');
+assert.equal(stayTotalUsd.currency,'USD');
+assert.equal(stayTotalUsd.value,70.17);
+
+// Rates read like a price: never "1 KHR = 0.0002 USD".
+const khrRate=api.rateLines('KHR','USD',{USD:1,KHR:4080});
+assert.equal(khrRate.line,'1 USD = 4,080 KHR');
+assert.ok(khrRate.sample.includes('4,000')&&khrRate.sample.includes('0.98'));
 assert.equal(api.convertMoney(32,'USD','USD',{USD:1,KHR:4000}),32);
 
 // Bucket list: a wish phrase must not become a street name in another country.
@@ -90,6 +102,8 @@ assert.equal(api.cleanBucketQuery('Sunset at Angkor Wat'),'Angkor Wat');
 assert.equal(api.cleanBucketQuery('Sunset and Sunrise at Angkor Wat'),'Angkor Wat');
 assert.equal(api.cleanBucketQuery('Angkor Wat at sunrise'),'Angkor Wat');
 assert.equal(api.cleanBucketQuery('  Koh Rong  '),'Koh Rong');
+assert.equal(api.placeNameScore('Angkor Wat','Angkor Wat'),4);
+assert.equal(api.placeNameScore('Vann Sophea Cambodia Knits Fairly Made Toys','Angkor Wat'),0);
 assert.ok(api.distanceKm([13.4125,103.867],[13.3622,103.8597])<10);
 assert.ok(api.distanceKm([13.4125,103.867],[48.5,-122.6])>1000);
 
