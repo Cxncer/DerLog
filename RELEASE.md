@@ -16,6 +16,14 @@ App id: `com.derlog.app` · version 1.23.1 (versionCode 2)
 | `www/assets/fonts.css`, `fonts/*.woff2` | `vendor/` (Plus Jakarta Sans + Kantumruy Pro, Latin and Khmer) |
 | `www/index.html` | `DerLog-v19.html` with the CDN tags replaced by the local files above |
 
+The bundle also drops the web mock-up chrome: `www/index.html` gets `class="native-shell"`
+on `<html>`, which removes the 400×844 phone frame, its rounded corners/shadow and the
+fake “9:41 / 5G” row, so the app fills the screen and the real Android status bar is
+visible. `@capacitor/status-bar` keeps that bar in step with the theme (`#040811` with
+light icons in dark mode and during onboarding, white with dark icons in light mode).
+Status-bar classes must not live on `<body>`: the app rewrites `body.className` when the
+theme changes.
+
 The APK therefore starts with no network and no CDN. The only remote asset left is the
 OCR library (`tesseract.js`), whose model files are a download anyway; if it cannot load,
 the ticket scanner shows "Text recognition is unavailable" and manual entry still works.

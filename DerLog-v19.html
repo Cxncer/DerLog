@@ -109,6 +109,13 @@
     .wlc-input:focus{border-color:rgba(131,249,255,.55);box-shadow:0 0 0 3px rgba(27,84,255,.18)}
     .wlc-divider{display:flex;align-items:center;gap:10px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.38)}
     .wlc-divider:before,.wlc-divider:after{content:'';flex:1;height:1px;background:rgba(255,255,255,.14)}
+    /* Native shell (Capacitor build): fill the real screen instead of drawing a mock phone. */
+    html.native-shell body{display:block;background:#040811;min-height:100dvh}
+    html.native-shell #root{min-height:100dvh}
+    html.native-shell .device-frame{width:100%!important;max-width:none!important;height:100dvh!important;min-height:100dvh!important;border-radius:0!important;border:0!important;box-shadow:none!important;margin:0!important}
+    html.native-shell .device-frame{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+    html.native-shell .device-status-bar{display:none!important}
+    html.native-shell .device-notch{display:none!important}
   </style>
 </head>
 <body class="theme-dark">
@@ -131,6 +138,18 @@
  });</script>
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
+/* Inside the Capacitor app the OS draws the real status bar, so drop the mock phone frame. */
+function isNativeShell(){
+ try{
+  const cap=window.Capacitor;
+  if(cap&&typeof cap.isNativePlatform==='function'&&cap.isNativePlatform())return true;
+  /* The native bridge can be injected after this script; the shell is served from https://localhost. */
+  return location.protocol==='https:'&&location.hostname==='localhost';
+ }catch(err){return false}
+}
+const NATIVE_SHELL=isNativeShell();
+const markNativeShell=()=>{if(isNativeShell())document.documentElement.classList.add('native-shell')};
+markNativeShell();
 
 /* ---------------------------------------------------------------- text + date helpers */
 function cleanPlaceTitle(value){const s=String(value||'').replace(/_/g,' ').replace(/\s+/g,' ').trim();return s?s.split(' ').map(w=>/^[A-Z0-9]{2,}$/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' '):'Place'}
@@ -1898,11 +1917,11 @@ function OnboardingScreen({data,googleClientId,onComplete}){
  };
 
  const googleReady=Boolean(clientId);
- return <div className="w-[400px] h-[844px] rounded-[48px] overflow-hidden relative shrink-0 border border-white/10 shadow-2xl bg-[#020408]">
+ return <div className="device-frame w-[400px] h-[844px] rounded-[48px] overflow-hidden relative shrink-0 border border-white/10 shadow-2xl bg-[#020408]">
   <div className="wlc-screen absolute inset-0"/>
   {step!=='welcome'&&<div className="absolute inset-0 bg-gradient-to-t from-[#020408]/96 via-[#020408]/72 to-[#020408]/30 backdrop-blur-[1px]"/>}
   <div className="relative h-full flex flex-col text-white">
-   <div className="px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
+   <div className="device-status-bar px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
    <div className="px-7 pb-2 flex items-center gap-1.5 shrink-0" aria-label={'Step '+(phase+1)+' of 3'}>{[0,1,2].map(i=><span key={i} className={'h-1 rounded-full transition-all '+(phase===i?'w-5 bg-white':'w-1.5 bg-white/25')}/>)}</div>
 
    {step==='welcome'&&<div key="welcome" className="wlc-fade flex-1 flex flex-col px-7 pb-9 pt-3">
@@ -2944,6 +2963,19 @@ function App(){
  const dayChips=['All',...Array.from({length:Math.max(1,activeTrip.daysCount||1)},(_,i)=>`Day ${i+1}`)];
  /* Android hardware Back: dismiss the topmost sheet/dialog, else leave the tab, else exit. */
  const backExit=()=>{try{const plugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(plugin&&typeof plugin.exitApp==='function')plugin.exitApp()}catch(err){}};
+ /* The bridge may arrive after the first script, so re-check once the app mounts. */
+ useEffect(()=>{markNativeShell()},[]);
+ /* Keep the real Android status bar in step with the app theme. */
+ useEffect(()=>{
+  const bar=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StatusBar;
+  if(!bar)return;
+  /* The onboarding screens are always dark, whatever theme is stored. */
+  const dark=!data.onboarded||data.theme!=='light';
+  try{
+   Promise.resolve(bar.setBackgroundColor({color:dark?'#040811':'#FFFFFF'})).catch(()=>{});
+   Promise.resolve(bar.setStyle({style:dark?'DARK':'LIGHT'})).catch(()=>{});
+  }catch(err){}
+ },[data.theme]);
  const backActionRef=useRef(null);
  useEffect(()=>{
   const plugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
@@ -2978,8 +3010,8 @@ function App(){
   };
  });
  if(!data.onboarded)return <OnboardingScreen data={data} googleClientId={data.googleClientId||DEFAULT_GOOGLE_CLIENT_ID} onComplete={handleOnboardingComplete} onRestore={applyRestore}/>;
- return <div className="aurora-canvas relative w-[400px] h-[844px] rounded-[48px] shadow-2xl overflow-hidden flex flex-col border border-white/20 shrink-0">
-  <div className="px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
+ return <div className="device-frame aurora-canvas relative w-[400px] h-[844px] rounded-[48px] shadow-2xl overflow-hidden flex flex-col border border-white/20 shrink-0">
+  <div className="device-status-bar px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
   <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-24 pt-2">
    {activeTab==='home'&&<div className="space-y-4">
     <div className="flex justify-between items-start pt-2 gap-3"><div className="home-heading min-w-0"><button onClick={()=>setShowTripSwitcher(true)} className="glass-pill inline-flex self-start items-center gap-2 px-3 py-1 rounded-full text-xs font-medium accent-txt mb-1">{tr('Trips')} <span className="opacity-60">▾</span></button><h1 className="text-[22px] font-semibold tracking-tight"><span className="khmer-greeting">តោះដើរលេង</span>, {data.userName}?</h1><p className="trip-location subtext-clr">{activeTrip.location||activeTrip.title}</p><p className="trip-dates subtext-clr">{formatDateRange(activeTrip.startDate,activeTrip.endDate)} • {activeTrip.daysCount} {tr('days')} · {activeTrip.nightsCount??Math.max(0,activeTrip.daysCount-1)} {tr('nights')}</p></div><div className="flex items-center gap-2 shrink-0"><button onClick={()=>setShowSearch(true)} aria-label="Search DerLog" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="search" size={17}/></button><button onClick={()=>setShowTripSwitcher(true)} aria-label="Trips" className="w-10 h-10 rounded-full glass-pill flex items-center justify-center"><Icon name="ticket" size={18}/></button></div></div>

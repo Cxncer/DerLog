@@ -60,6 +60,10 @@ page =
 ` +
   page.slice(styleAt);
 
+// The APK shell always fills the screen: the OS draws the real status bar there.
+// The flag lives on <html> because the app rewrites body.className for its theme.
+page = page.replace('<html lang="en">', '<html lang="en" class="native-shell">');
+
 await writeFile(`${OUT}/index.html`, page);
 
 /* ---------------------------------------------------------------- 3. local assets */
