@@ -446,30 +446,28 @@ function extractOcrMoney(text,fallbackCode){
     const bare=source.match(/\b(?:total|amount|paid|grand\s*total)[^\d]{0,14}([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i);
     return {value:bare?parseFloat(bare[1].replace(/,/g,'')):0,currency:fallback};
   }
-  /* Tickets print both the local total and an "approx. US$…" line, and OCR sometimes drops the
-     thousands separator. Read the label around each number instead of taking the biggest one. */
-  const scored=amounts.filter(a=>Number.isFinite(a.value)&&a.value>0).map(a=>{
-    const before=source.slice(Math.max(0,a.index-70),a.index);
-    const between=b=>source.slice(Math.min(a.index,b.index),Math.max(a.index,b.index));
-    let score=0;
-    if(/(grand\s*total|\btotal\b|amount\s*(?:due|paid)|to\s*pay|\bpaid\b|\bprice\b)/i.test(before))score+=5;
-    /* A local total printed beside a foreign one is the price people quote
-       ("approx. KHR 285,404" over "US$70.17"), not the line items above it. */
-    if(amounts.some(b=>b!==a&&b.currency!==a.currency&&Math.abs(b.index-a.index)<=32&&!/(approx|approximately|≈|equivalent|converted)/i.test(between(b))))score+=8;
-    if(/(approx|approximately|≈|~|equivalent|converted|exchange)/i.test(before))score+=10;
-    /* "70 riel" is always a misread of the US$ figure — no riel price is that small. */
-    if(zeroDecimalCurrency(a.currency)&&a.value<1000)score-=8;
-    if(String(a.currency)===fallback)score+=2;
-    return {...a,score};
-  });
-  if(!scored.length){
-    const bare=source.match(/\b(?:total|amount|paid|grand\s*total)[^\d]{0,14}([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i);
-    return {value:bare?parseFloat(bare[1].replace(/,/g,'')):0,currency:fallback};
+  /* OCR drops thousands separators, so "70 riel" is always a misread of the US$ figure. */
+  const usable=amounts.filter(a=>Number.isFinite(a.value)&&a.value>0&&!(zeroDecimalCurrency(a.currency)&&a.value<1000));
+  if(!usable.length)return {value:0,currency:fallback};
+  const before=a=>source.slice(Math.max(0,a.index-70),a.index);
+  const inTrip=list=>list.find(a=>a.currency===fallback);
+  const largest=list=>list.slice().sort((a,b)=>b.value-a.value)[0];
+  const pick=list=>inTrip(list)||largest(list);
+  /* 1. A converted total — the local total and a foreign one are the same price printed twice
+        ("approx. KHR 285,404 / US$70.17"). Take the copy in the trip's currency. */
+  const converted=usable.find(a=>/(approx|approximately|≈|equivalent|converted)/i.test(before(a)));
+  if(converted){
+    /* The other half is the closest foreign amount, not the nearest row before it. */
+    const twin=usable.filter(b=>b!==converted&&b.currency!==converted.currency&&Math.abs(b.index-converted.index)<=32)
+      .sort((a,b)=>Math.abs(a.index-converted.index)-Math.abs(b.index-converted.index))[0];
+    const chosen=pick(twin?[converted,twin]:[converted]);
+    return {value:chosen.value,currency:chosen.currency};
   }
-  const ranked=scored.sort((a,b)=>b.score-a.score||b.value-a.value);
-  /* A ticket priced in the trip's own currency is quoting that price. */
-  const inTrip=ranked.filter(a=>String(a.currency)===fallback&&a.score>=3);
-  const chosen=(inTrip.length?inTrip:ranked)[0];
+  /* 2. A labelled total: grand total, amount paid, price. */
+  const labelled=usable.filter(a=>/(grand\s*total|\btotal\b|amount\s*(?:due|paid)|to\s*pay|\bpaid\b|\bprice\b)/i.test(before(a)));
+  if(labelled.length){const chosen=pick(labelled);return {value:chosen.value,currency:chosen.currency}}
+  /* 3. Nothing labelled: the trip's currency, else the biggest number on the page. */
+  const chosen=pick(usable);
   return {value:chosen.value,currency:chosen.currency};
 }
 function extractOcrCode(text){
@@ -1974,7 +1972,7 @@ function OnboardingScreen({data,googleClientId,onComplete}){
 
 /* ---------------------------------------------------------------- schema, currency, dialogs */
 const SCHEMA_VERSION=4;
-const APP_VERSION='1.21.0';
+const APP_VERSION='1.21.1';
 const BUILD_NUMBER='2026.11.19';
 const DEFAULT_CURRENCY='USD';
 const DEFAULT_GOOGLE_CLIENT_ID='110946969761-a1lbb3uv4n4qqf2258j5ne4uinli6i53.apps.googleusercontent.com';
@@ -2779,7 +2777,7 @@ function App(){
                <div className="text-sm font-medium leading-snug min-w-0">{item.title}</div>
                {isFocus&&<span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${runningActivity?'bg-[#83F9FF] text-[#040811]':'bg-[#1B54FF]/15 accent-txt border border-[#1B54FF]/30'}`}>{focusActivityLabel}</span>}
              </div>
-             <div className="text-[11px] subtext-clr mt-1 flex items-center gap-1.5"><span>{item.category}</span><span className="opacity-50">•</span><span>{to12Hour(item.time)}</span></div>
+             <div className="text-[11px] subtext-clr mt-1 flex items-center gap-1.5"><span>{item.category}</span><span className="opacity-50">•</span><span>{item.category==='Stay'&&item.checkIn?`Check-in ${to12Hour(item.checkInTime||'14:00')} · Check-out ${to12Hour(item.checkOutTime||'12:00')}`:to12Hour(item.time)}</span></div>
            </div>
          </div>
        })}

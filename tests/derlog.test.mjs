@@ -89,6 +89,12 @@ assert.equal(stayTotal.value,285404);
 const stayTotalUsd=api.extractOcrMoney('TOTAL\napprox. KHR 285,404\nUS$70.17','USD');
 assert.equal(stayTotalUsd.currency,'USD');
 assert.equal(stayTotalUsd.value,70.17);
+// A three-digit riel price is a misread of the US$ figure, not a real total.
+assert.equal(api.extractOcrMoney('Total ៛70','KHR').value,0);
+// With no label, the trip's own currency wins over a bigger foreign number.
+const unlabelled=api.extractOcrMoney('KHR 15,000\nUS$ 3.70','KHR');
+assert.equal(unlabelled.currency,'KHR');
+assert.equal(unlabelled.value,15000);
 
 // Rates read like a price: never "1 KHR = 0.0002 USD".
 const khrRate=api.rateLines('KHR','USD',{USD:1,KHR:4080});
