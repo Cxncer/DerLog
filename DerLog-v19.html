@@ -2221,6 +2221,7 @@ function migrateData(saved){
 }
 /* In-app dialogs: native alert()/confirm() are blocked in some embedded browsers. */
 let derDialogHandler=null;
+let derDialogCancelTop=null;
 function openDerDialog(options){
  return new Promise(resolve=>{
    if(!derDialogHandler){
@@ -2236,9 +2237,16 @@ const derConfirm=(message,title)=>openDerDialog({kind:'confirm',title:title||'Pl
 const derChoose=(title,options)=>openDerDialog({kind:'choose',title,options});
 function DialogHost(){
  const [dlg,setDlg]=useState(null);
- useEffect(()=>{derDialogHandler=item=>setDlg(item);return()=>{derDialogHandler=null}},[]);
+ const dlgRef=useRef(null),closeRef=useRef(null);
+ useEffect(()=>{
+  derDialogHandler=item=>{dlgRef.current=item;setDlg(item)};
+  /* Hardware Back dismisses the visible dialog the same way Cancel does. */
+  derDialogCancelTop=()=>{const item=dlgRef.current;if(!item)return false;if(closeRef.current)closeRef.current(item.kind==='confirm'?false:null);return true};
+  return()=>{derDialogHandler=null;derDialogCancelTop=null}
+ },[]);
  if(!dlg)return null;
- const close=value=>{const done=dlg.resolve;setDlg(null);try{done(value)}catch(err){}};
+ const close=value=>{const done=dlg.resolve;dlgRef.current=null;setDlg(null);try{done(value)}catch(err){}};
+ closeRef.current=close;
  return <div className="absolute inset-0 z-[140] bg-black/70 backdrop-blur-sm flex items-center justify-center p-5" role="dialog" aria-modal="true">
   <div className="modal-bg w-full max-w-[300px] border rounded-[24px] p-5 space-y-3">
    <h3 className="text-sm font-semibold">{dlg.title}</h3>
@@ -2934,6 +2942,41 @@ function App(){
   return out;
  })();
  const dayChips=['All',...Array.from({length:Math.max(1,activeTrip.daysCount||1)},(_,i)=>`Day ${i+1}`)];
+ /* Android hardware Back: dismiss the topmost sheet/dialog, else leave the tab, else exit. */
+ const backExit=()=>{try{const plugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(plugin&&typeof plugin.exitApp==='function')plugin.exitApp()}catch(err){}};
+ const backActionRef=useRef(null);
+ useEffect(()=>{
+  const plugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+  if(!plugin||typeof plugin.addListener!=='function')return undefined;
+  let handle=null;
+  const pending=plugin.addListener('backButton',()=>{const run=backActionRef.current;if(run)run()});
+  if(pending&&typeof pending.then==='function')pending.then(h=>{handle=h}).catch(()=>{});
+  else handle=pending;
+  return()=>{try{if(handle&&typeof handle.remove==='function')handle.remove()}catch(err){}};
+ },[]);
+ useEffect(()=>{
+  backActionRef.current=()=>{
+   if(typeof derDialogCancelTop==='function'&&derDialogCancelTop())return;
+   if(!data.onboarded){backExit();return}
+   if(previewAttachment){setPreviewAttachment(null);return}
+   if(selectedDestinationDetail){setSelectedDestinationDetail(null);return}
+   if(bookingEditor){setBookingEditor(null);return}
+   if(bookingPreview){setBookingPreview(null);return}
+   if(showBookings){setShowBookings(false);return}
+   if(showAddModal){setShowAddModal(false);return}
+   if(budgetCategory){setBudgetCategory(null);return}
+   if(showTripSwitcher){if(showNewTripForm)setShowNewTripForm(false);else setShowTripSwitcher(false);return}
+   if(showBudgetModal){setShowBudgetModal(false);return}
+   if(showTripDatesEditor){setShowTripDatesEditor(false);return}
+   if(showSearch){setShowSearch(false);return}
+   if(showTripEditor){setShowTripEditor(false);return}
+   if(showFullMap){setShowFullMap(false);return}
+   if(showDestinationSuggestions){setShowDestinationSuggestions(false);return}
+   if(profilePage!=='main'){setProfilePage('main');return}
+   if(activeTab!=='home'){setActiveTab('home');return}
+   backExit();
+  };
+ });
  if(!data.onboarded)return <OnboardingScreen data={data} googleClientId={data.googleClientId||DEFAULT_GOOGLE_CLIENT_ID} onComplete={handleOnboardingComplete} onRestore={applyRestore}/>;
  return <div className="aurora-canvas relative w-[400px] h-[844px] rounded-[48px] shadow-2xl overflow-hidden flex flex-col border border-white/20 shrink-0">
   <div className="px-7 pt-4 pb-1 flex justify-between items-center text-xs font-medium opacity-80 shrink-0"><span>9:41</span><div className="w-24 h-4 bg-current opacity-20 rounded-full"></div><div className="flex items-center gap-1.5"><span>5G</span><div className="w-4 h-2.5 border border-current rounded-[3px] p-[1px]"><div className="w-full h-full bg-current rounded-[1px]"></div></div></div></div>
