@@ -18,9 +18,11 @@ App id: `com.derlog.app` · version 1.24.0 (versionCode 3)
 
 The bundle also drops the web mock-up chrome: `www/index.html` gets `class="native-shell"`
 on `<html>`, which removes the 400×844 phone frame, its rounded corners/shadow and the
-fake “9:41 / 5G” row, so the app fills the screen and the real Android status bar is
-visible. `@capacitor/status-bar` keeps that bar in step with the theme (`#040811` with
-light icons in dark mode and during onboarding, white with dark icons in light mode).
+fake “9:41 / 5G” row (kept as an empty top spacer so content clears the camera cut-out).
+The app runs **full screen**: `MainActivity` hides the Android status bar (and re-hides it
+whenever the window regains focus; a swipe from the top edge shows it briefly), and
+`@capacitor/status-bar` `hide()` is called from the app as a second layer. The theme colours
+are still kept in step (`#040811` dark, white light) for when the bar is swiped in.
 Status-bar classes must not live on `<body>`: the app rewrites `body.className` when the
 theme changes.
 
@@ -137,3 +139,18 @@ Send `app-release.apk` (Drive, email, USB) and open it; allow "install unknown a
 the app you launch it from. Play Protect may show a generic "app not scanned" card for
 any app that did not come from Play — tap **Install anyway**. A Play Store release needs
 an AAB (`bundleRelease`), a Play Console account and the same keystore.
+
+## 8. Launch screen, icon, photos
+
+- **Launch:** the page shows one splash (black, white DerLog mark, progress bar) that is
+  lifted only after React has painted its first screen. Its colours match the native
+  splash (`resources/splash.png`, black), so the OS-to-app hand-off is seamless.
+- **Icon / splash:** `assets/logo.svg` is the single source (white mark on black).
+  `npm run icons` renders `icon-192/512.png`, `resources/*` (including adaptive-icon
+  foreground/background) and then runs `capacitor-assets generate`.
+- **Slideshow photos:** the local Pinterest service only works on the same machine, never
+  inside the APK. For the APK either set a free Pexels key at build time
+  (`DERLOG_PEXELS_KEY=... npm run build`; Pexels asks for a visible credit link) or host
+  `derlog-photo-service` over https and store its URL in `localStorage['derlog.photoServiceUrl']`.
+  With neither, the Wikimedia/Openverse fallback is used (now filtered for modern, wide photos).
+- **OCR:** `tesseract.js` is loaded on first scan, not at launch.
