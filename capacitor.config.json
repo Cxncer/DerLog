@@ -2,14 +2,18 @@
   "appId": "com.derlog.app",
   "appName": "DerLog",
   "webDir": "www",
+  "backgroundColor": "#000000",
   "server": {
     "androidScheme": "https"
   },
+  "android": {
+    "allowMixedContent": false
+  },
   "plugins": {
     "StatusBar": {
-      "overlaysWebView": false,
+      "overlaysWebView": true,
       "style": "DARK",
-      "backgroundColor": "#040811"
+      "backgroundColor": "#000000"
     }
   }
 }
