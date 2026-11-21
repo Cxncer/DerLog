@@ -15,7 +15,6 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -153,13 +152,53 @@
     html.native-shell body{display:block;background:#040811;min-height:100dvh}
     html.native-shell #root{min-height:100dvh}
     html.native-shell .device-frame{width:100%!important;max-width:none!important;height:100dvh!important;min-height:100dvh!important;border-radius:0!important;border:0!important;box-shadow:none!important;margin:0!important}
-    html.native-shell .device-frame{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-    html.native-shell .device-status-bar{display:none!important}
+    html.native-shell .device-frame{padding-bottom:env(safe-area-inset-bottom,0px)}
+    /* Full screen: the mock status bar becomes an empty spacer so content clears the camera cut-out and rounded corners. */
+    html.native-shell .device-status-bar{visibility:hidden!important;flex:none!important;height:max(env(safe-area-inset-top,0px),22px)!important;padding:0!important;overflow:hidden!important}
     html.native-shell .device-notch{display:none!important}
   </style>
 </head>
 <body class="theme-dark">
-<div id="root"><div style="max-width:360px;margin:30px auto;padding:20px;color:#fff;background:#172033;border-radius:16px;font:14px sans-serif">Loading DerLog…</div></div>
+<div id="derlog-splash" role="progressbar" aria-label="Loading DerLog" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8">
+  <style>
+    #derlog-splash{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .35s ease;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif}
+    #derlog-splash.is-done{opacity:0;pointer-events:none}
+    #derlog-splash svg{width:132px;height:132px;display:block}
+    #derlog-splash .ds-name{margin-top:22px;color:#fff;font-size:22px;font-weight:700;letter-spacing:.34em;text-indent:.34em}
+    #derlog-splash .ds-bar{margin-top:30px;width:148px;height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}
+    #derlog-splash .ds-bar i{display:block;height:100%;width:8%;border-radius:3px;background:#fff;transition:width .25s ease-out}
+    @media (prefers-reduced-motion:reduce){#derlog-splash,#derlog-splash .ds-bar i{transition:none}}
+  </style>
+  <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M512 764C512 764 292 590 292 410a220 220 0 0 1 440 0C732 590 512 764 512 764ZM436 318h82a92 92 0 0 1 0 184h-82Zm52 44v96h30a48 48 0 0 0 0-96Z"/><path d="M250 826C360 776 470 858 580 812S720 788 790 814" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-dasharray="1 34"/></svg>
+  <div class="ds-name">DERLOG</div>
+  <div class="ds-bar"><i></i></div>
+</div>
+<script>
+/* Launch screen: one branded splash with a real progress bar. The native Android splash uses the same
+   black background and mark, so the hand-off from the OS splash to this screen is seamless. */
+(function(){
+  var el=document.getElementById('derlog-splash'),bar=el&&el.querySelector('.ds-bar i'),shown=Date.now(),pct=8,finished=false;
+  function paint(){if(!bar)return;bar.style.width=pct+'%';el.setAttribute('aria-valuenow',String(Math.round(pct)))}
+  function set(v){if(finished)return;if(v>pct){pct=Math.min(96,v);paint()}}
+  function done(){
+    if(finished)return;finished=true;
+    /* Keep the screen up briefly so a fast launch does not flash. */
+    var wait=Math.max(0,550-(Date.now()-shown));
+    setTimeout(function(){pct=100;paint();setTimeout(function(){if(el){el.classList.add('is-done');setTimeout(function(){if(el&&el.parentNode)el.parentNode.removeChild(el)},400)}},180)},wait);
+  }
+  window.__derlogSplash={set:set,done:done};
+  document.addEventListener('DOMContentLoaded',function(){set(30)});
+  window.addEventListener('load',function(){set(50)});
+  /* Creep forward while libraries load so the bar never looks frozen. */
+  var creep=setInterval(function(){if(finished){clearInterval(creep);return}if(pct<46)set(pct+2)},180);
+  /* A startup failure must show the error message, not hide behind the splash. */
+  function fail(){setTimeout(function(){var root=document.getElementById('root');if(!root||!root.querySelector('#derlog-app'))done()},60)}
+  window.addEventListener('error',fail);window.addEventListener('unhandledrejection',fail);
+  /* Safety net: never trap the user behind the splash. */
+  setTimeout(done,20000);
+})();
+</script>
+<div id="root"></div>
 <script> window.addEventListener('error',function(e){
    var root=document.getElementById('root');
    if(root && !root.querySelector('#derlog-app')){
@@ -178,6 +217,8 @@
  });</script>
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
+const splashProgress=pct=>{try{window.__derlogSplash&&window.__derlogSplash.set(pct)}catch(err){}};
+splashProgress(60);
 /* Inside the Capacitor app the OS draws the real status bar, so drop the mock phone frame. */
 function isNativeShell(){
  try{
@@ -703,8 +744,22 @@ async function upscaleForOcr(dataUrl){
     return canvas;
   }catch(err){return null}
 }
+/* The OCR library is only needed when someone scans a ticket, so it loads on demand and never delays launch. */
+let tesseractLoading=null;
+function loadTesseract(){
+  if(window.Tesseract)return Promise.resolve(window.Tesseract);
+  if(tesseractLoading)return tesseractLoading;
+  tesseractLoading=new Promise((resolve,reject)=>{
+    const tag=document.createElement('script');
+    tag.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    tag.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error('Text recognition did not load.'));
+    tag.onerror=()=>reject(new Error('Text recognition could not be downloaded.'));
+    document.head.appendChild(tag);
+  }).catch(err=>{tesseractLoading=null;throw err});
+  return tesseractLoading;
+}
 async function ocrInput(input,onProgress){
-  if(!window.Tesseract)throw new Error('Text recognition is unavailable right now. Enter the details below.');
+  try{await loadTesseract()}catch(err){throw new Error('Text recognition is unavailable right now. Check your connection, or enter the details below.')}
   const worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(onProgress&&m&&m.status==='recognizing text')onProgress(Math.round((m.progress||0)*100))}});
   try{
     const result=await worker.recognize(input);
@@ -881,6 +936,238 @@ async function lookupBucketPlace(title,trip){
   }catch(err){}
   return null;
 }
+/* ---------------------------------------------------------------- ticket understanding: layout, flights, labelled times */
+/* Many tickets print labels in a header row ("FROM   TO") with the values underneath, so reading line by line
+   pairs labels with the wrong text. The word boxes from OCR let us read those columns properly. */
+const OCR_COLUMN_LABELS=[
+  ['origin',/^(from|origin|departure\s*from|depart\s*from|leaving\s*from|boarding\s*point|pick[\s-]?up(?:\s*point)?)$/i],
+  ['destination',/^(to|destination|going\s*to|arriving\s*at|drop[\s-]?off(?:\s*point)?)$/i],
+  ['departure',/^(departure|depart|departs|departing|dep\.?|std|etd)$/i],
+  ['arrival',/^(arrival|arrive|arrives|arriving|arr\.?|sta|eta)$/i],
+  ['date',/^(date|travel\s*date|journey\s*date|departure\s*date|date\s*of\s*travel)$/i],
+  ['time',/^(time|departure\s*time|dep\.?\s*time)$/i],
+  ['seat',/^(seat|seats|seat\s*no\.?|seat\s*number)$/i],
+  ['passenger',/^(passenger|passengers|passenger\s*name|name|traveller|traveler)$/i],
+  ['flight',/^(flight|flight\s*no\.?|flight\s*number)$/i],
+  ['operator',/^(operator|carrier|airline|company|bus\s*company)$/i]
+];
+function ocrCanonicalLabel(text){
+  const t=String(text||'').replace(/[:：]+$/,'').replace(/\s+/g,' ').trim();
+  if(!t||t.length>22)return '';
+  for(const [key,re] of OCR_COLUMN_LABELS)if(re.test(t))return key;
+  return '';
+}
+/* Words -> rows (by vertical position) -> cells (neighbouring words closer than about one character). */
+function ocrRows(words){
+  const list=(words||[]).filter(w=>w&&w.bbox&&String(w.text||'').trim()&&(w.confidence===undefined||w.confidence>=25))
+    .map(w=>({text:String(w.text).trim(),x0:Number(w.bbox.x0)||0,x1:Number(w.bbox.x1)||0,y0:Number(w.bbox.y0)||0,y1:Number(w.bbox.y1)||0}));
+  if(!list.length)return [];
+  const heights=list.map(w=>w.y1-w.y0).sort((a,b)=>a-b),med=Math.max(6,heights[Math.floor(heights.length/2)]||10);
+  list.sort((a,b)=>((a.y0+a.y1)-(b.y0+b.y1))||(a.x0-b.x0));
+  const rows=[];
+  for(const w of list){
+    const cy=(w.y0+w.y1)/2,row=rows.find(r=>Math.abs(r.cy-cy)<=med*0.6);
+    if(row){row.words.push(w);row.cy=(row.cy*(row.words.length-1)+cy)/row.words.length}else rows.push({cy,words:[w]});
+  }
+  rows.sort((a,b)=>a.cy-b.cy);
+  return rows.map(r=>{
+    r.words.sort((a,b)=>a.x0-b.x0);
+    const cells=[];
+    for(const w of r.words){
+      const last=cells[cells.length-1];
+      if(last&&w.x0-last.x1<=med*1.1){last.text+=' '+w.text;last.x1=w.x1}else cells.push({text:w.text,x0:w.x0,x1:w.x1});
+    }
+    return {cy:r.cy,cells};
+  });
+}
+/* { origin, destination, date, seat, ... } read from "header row of labels, row of values underneath". */
+function ocrColumnFields(words){
+  const rows=ocrRows(words),out={};
+  for(let i=0;i<rows.length-1;i++){
+    const heads=rows[i].cells.map(c=>({...c,key:ocrCanonicalLabel(c.text)})).filter(c=>c.key);
+    if(heads.length<2||heads.length<rows[i].cells.length*0.5)continue;
+    const below=rows[i+1];
+    if(below.cells.some(c=>ocrCanonicalLabel(c.text)))continue;
+    const taken={};
+    for(const cell of below.cells){
+      let best=null,bestDist=Infinity;
+      for(const h of heads){
+        const dist=Math.min(Math.abs(cell.x0-h.x0),Math.abs((cell.x0+cell.x1)/2-(h.x0+h.x1)/2));
+        if(dist<bestDist){best=h;bestDist=dist}
+      }
+      if(!best||out[best.key]!==undefined)continue;
+      taken[best.key]=(taken[best.key]?taken[best.key]+' ':'')+cell.text;
+    }
+    Object.keys(taken).forEach(k=>{if(out[k]===undefined)out[k]=taken[k].trim()});
+  }
+  return out;
+}
+function ocrPlaceValue(value){
+  const s=String(value||'').replace(/\s+/g,' ').trim();
+  return /^[A-Za-z][A-Za-z.'’\- ]{2,34}$/.test(s)&&!/\b(express|e-booking|bus|minivan|coach|seat|ticket|total|date|time|price|passenger)\b/i.test(s)?s:'';
+}
+function applyColumnFields(t,cols,trip){
+  const out={...t};
+  if(!cols||!Object.keys(cols).length)return out;
+  const depTime=extractOcrTimes(`${cols.departure||''} ${cols.time||''}`)[0];
+  const arrTime=extractOcrTimes(cols.arrival||'')[0];
+  const depPlace=depTime?'':ocrPlaceValue(cols.departure);
+  const arrPlace=arrTime?'':ocrPlaceValue(cols.arrival);
+  const origin=ocrPlaceValue(cols.origin)||depPlace,destination=ocrPlaceValue(cols.destination)||arrPlace;
+  /* Labelled columns are more reliable than a guess from loose text: both together override. */
+  if(origin&&destination&&origin.toLowerCase()!==destination.toLowerCase()){out.origin=origin;out.destination=destination}
+  else{if(!out.origin&&origin)out.origin=origin;if(!out.destination&&destination)out.destination=destination}
+  if(!out.departureTime&&depTime)out.departureTime=depTime;
+  if(!out.arrivalTime&&arrTime)out.arrivalTime=arrTime;
+  const date=extractOcrDates(cols.date||'',trip)[0];
+  if(!out.travelDate&&date)out.travelDate=date;
+  if(!out.operator&&cols.operator&&ocrPlaceValue(cols.operator))out.operator=ocrPlaceValue(cols.operator);
+  if(!(out.passengers||[]).length&&cols.passenger){
+    const name=String(cols.passenger).replace(/\d+/g,' ').replace(/\s+/g,' ').trim();
+    if(/^[A-Za-z][A-Za-z.'’\- ]{2,40}$/.test(name)){
+      const seat=String(cols.seat||'').replace(/\s+/g,'').toUpperCase();
+      out.passengers=[{name,seat:/^[0-9]{1,3}[A-Z]?$/.test(seat)?seat:''}];
+    }
+  }
+  return out;
+}
+/* Flights: IATA airport codes and the airline's two-character code identify them far better than free text. */
+const OCR_AIRPORTS={PNH:'Phnom Penh',REP:'Siem Reap',SAI:'Siem Reap',KOS:'Sihanoukville',BKK:'Bangkok',DMK:'Bangkok',CNX:'Chiang Mai',HKT:'Phuket',USM:'Koh Samui',KBV:'Krabi',SGN:'Ho Chi Minh City',HAN:'Hanoi',DAD:'Da Nang',CXR:'Nha Trang',PQC:'Phu Quoc',VTE:'Vientiane',LPQ:'Luang Prabang',RGN:'Yangon',MDL:'Mandalay',SIN:'Singapore',KUL:'Kuala Lumpur',PEN:'Penang',BKI:'Kota Kinabalu',CGK:'Jakarta',DPS:'Bali',MNL:'Manila',CEB:'Cebu',HKG:'Hong Kong',MFM:'Macau',TPE:'Taipei',ICN:'Seoul',GMP:'Seoul',NRT:'Tokyo',HND:'Tokyo',KIX:'Osaka',PEK:'Beijing',PKX:'Beijing',PVG:'Shanghai',SHA:'Shanghai',CAN:'Guangzhou',SZX:'Shenzhen',CTU:'Chengdu',KMG:'Kunming',DEL:'Delhi',BOM:'Mumbai',BLR:'Bengaluru',DXB:'Dubai',DOH:'Doha',AUH:'Abu Dhabi',IST:'Istanbul',LHR:'London',CDG:'Paris',AMS:'Amsterdam',FRA:'Frankfurt',MUC:'Munich',FCO:'Rome',MAD:'Madrid',BCN:'Barcelona',ZRH:'Zurich',JFK:'New York',LAX:'Los Angeles',SFO:'San Francisco',ORD:'Chicago',YVR:'Vancouver',SYD:'Sydney',MEL:'Melbourne',AKL:'Auckland'};
+const OCR_AIRLINES={K6:'Cambodia Angkor Air',KR:'Cambodia Airways',QV:'Lao Airlines',FD:'Thai AirAsia',AK:'AirAsia',SQ:'Singapore Airlines',TR:'Scoot',TG:'Thai Airways',WE:'Thai Smile',PG:'Bangkok Airways',VN:'Vietnam Airlines',VJ:'VietJet Air',QH:'Bamboo Airways',MH:'Malaysia Airlines',OD:'Batik Air Malaysia',GA:'Garuda Indonesia',JT:'Lion Air',PR:'Philippine Airlines','5J':'Cebu Pacific',CX:'Cathay Pacific',KE:'Korean Air',OZ:'Asiana Airlines',NH:'ANA',JL:'Japan Airlines',CA:'Air China',MU:'China Eastern',CZ:'China Southern',EK:'Emirates',QR:'Qatar Airways',EY:'Etihad Airways',TK:'Turkish Airlines',BA:'British Airways',AF:'Air France',KL:'KLM',LH:'Lufthansa',AA:'American Airlines',UA:'United Airlines',DL:'Delta Air Lines',QF:'Qantas',AI:'Air India','6E':'IndiGo'};
+function extractFlight(text){
+  const t=String(text||'');
+  const flight={origin:'',destination:'',operator:'',flightNumber:''};
+  let m=t.match(/\b(?:flight|flt)\s*(?:no\.?|number|#)?\s*[:\-]?\s*([A-Z][A-Z0-9]|[0-9][A-Z])\s?(\d{2,4})\b/i);
+  if(!m)m=[...t.matchAll(/\b([A-Z][A-Z0-9]|[0-9][A-Z])\s?(\d{3,4})\b/g)].find(x=>OCR_AIRLINES[x[1]]);
+  if(m){
+    const code=m[1].toUpperCase();
+    flight.flightNumber=`${code} ${m[2]}`;
+    flight.operator=OCR_AIRLINES[code]||'';
+  }
+  const codes=[];
+  for(const x of t.matchAll(/\b([A-Z]{3})\b/g))if(OCR_AIRPORTS[x[1]]&&!codes.includes(x[1]))codes.push(x[1]);
+  if(codes.length>=2){
+    flight.origin=`${OCR_AIRPORTS[codes[0]]} (${codes[0]})`;
+    flight.destination=`${OCR_AIRPORTS[codes[1]]} (${codes[1]})`;
+  }
+  const signal=/\b(flight|boarding\s*pass|e-?ticket|airline|airways?|gate|terminal|pnr|itinerary)\b/i.test(t);
+  if(!flight.flightNumber&&!(codes.length>=2&&signal))return null;
+  return flight;
+}
+/* Times and dates that are not the journey itself: boarding cut-offs, the day the ticket was bought or printed. */
+const OCR_NON_TRAVEL_LINE=/\b(boarding\s*(?:time|closes?)?|gate\s*(?:closes?|clos\w*)|check[\s-]?in\s*(?:opens?|closes?|counter)|issued?|issue\s*date|booked\s*on|booking\s*date|purchase\w*|printed|created|payment\s*date|valid\s*(?:until|till)|expires?)\b/i;
+const OCR_LABEL_STOP=/\b(?:arriv\w*|depart\w*|dep\.|arr\.|duration|boarding|gate|date|seat|passenger|price|total|terminal)\b/i;
+function timeAfterLabel(lines,re){
+  for(let i=0;i<lines.length;i++){
+    const hit=lines[i].match(re);
+    if(!hit||hit.index===undefined||OCR_NON_TRAVEL_LINE.test(lines[i]))continue;
+    let rest=lines[i].slice(hit.index+hit[0].length);
+    const stop=rest.search(OCR_LABEL_STOP);
+    if(stop>=0)rest=rest.slice(0,stop);
+    let time=extractOcrTimes(rest)[0];
+    if(!time&&stop<0&&lines[i+1]&&/^\s*(?:[01]?\d|2[0-3])\s*:\s*[0-5]\d/.test(lines[i+1]))time=extractOcrTimes(lines[i+1])[0];
+    if(time)return time;
+  }
+  return '';
+}
+/* How complete a reading is: used to pick the better of two OCR passes, then fill gaps from the other. */
+function bookingScore(parsed){
+  if(!parsed)return 0;
+  const has=v=>Array.isArray(v)?v.length>0:Boolean(v&&String(v).trim()&&v!==0);
+  if(parsed.type==='stay'){
+    const s=parsed.stay||{};
+    return (has(s.property)?2:0)+(has(s.checkIn)?3:0)+(has(s.checkOut)?3:0)+(has(s.roomType)?1:0)+(has(s.total)?1:0)+(has(s.confirmationNumber)?1:0);
+  }
+  const t=parsed.transport||{};
+  return (has(t.operator)?1:0)+(has(t.origin)?2:0)+(has(t.destination)?2:0)+(has(t.travelDate)?2:0)+(has(t.departureTime)?2:0)+(has(t.arrivalTime)?1:0)+(has(t.passengers)?3:0)+(has(t.ticketNumber)?1:0)+(has(t.total)?1:0);
+}
+function parseBookingOcrMulti(passes,trip,fileHint){
+  const parsedList=(passes||[]).filter(p=>p&&String(p.text||'').trim())
+    .map(p=>({pass:p,parsed:parseBookingOcr(p.text,trip,p.words,fileHint)}))
+    .sort((a,b)=>bookingScore(b.parsed)-bookingScore(a.parsed));
+  if(!parsedList.length)return null;
+  const best=parsedList[0],key=best.parsed.type==='stay'?'stay':'transport';
+  const merged={...best.parsed[key]};
+  for(const other of parsedList.slice(1)){
+    if(other.parsed.type!==best.parsed.type)continue;
+    const extra=other.parsed[key]||{};
+    Object.keys(extra).forEach(k=>{
+      const empty=v=>v===undefined||v===null||v===''||v===0||(Array.isArray(v)&&!v.length);
+      if(empty(merged[k])&&!empty(extra[k]))merged[k]=extra[k];
+    });
+  }
+  return {parsed:{type:best.parsed.type,[key]:merged},text:best.pass.text,words:best.pass.words};
+}
+/* ---------------------------------------------------------------- two reading passes for phone screenshots and photos */
+function canvasFromSource(source){
+  if(source&&typeof source.getContext==='function')return Promise.resolve(source);
+  return new Promise((resolve,reject)=>{
+    const isString=typeof source==='string';
+    const url=isString?source:URL.createObjectURL(source);
+    const img=new Image();
+    img.onload=()=>{
+      const long=Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height)||1;
+      const scale=long>2400?2400/long:1;
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));
+      canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      if(!isString)URL.revokeObjectURL(url);
+      resolve(canvas);
+    };
+    img.onerror=()=>{if(!isString)URL.revokeObjectURL(url);reject(new Error('decode'))};
+    img.src=url;
+  });
+}
+/* Grey-scale, stretch the contrast, and flip dark-mode screenshots (light text on dark) to dark text on light. */
+function enhanceForOcr(canvas){
+  const out=document.createElement('canvas');
+  out.width=canvas.width;out.height=canvas.height;
+  const ctx=out.getContext('2d');
+  ctx.drawImage(canvas,0,0);
+  const img=ctx.getImageData(0,0,out.width,out.height),d=img.data,hist=new Uint32Array(256);
+  let sum=0;
+  for(let i=0;i<d.length;i+=4){const g=Math.round(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114);d[i]=g;hist[g]++;sum+=g}
+  const total=d.length/4,mean=sum/Math.max(1,total);
+  let lo=0,hi=255,acc=0;
+  for(let v=0;v<256;v++){acc+=hist[v];if(acc>=total*0.01){lo=v;break}}
+  acc=0;
+  for(let v=255;v>=0;v--){acc+=hist[v];if(acc>=total*0.01){hi=v;break}}
+  const range=Math.max(40,hi-lo),invert=mean<118;
+  for(let i=0;i<d.length;i+=4){
+    let g=(d[i]-lo)*255/range;
+    g=g<0?0:g>255?255:g;
+    if(invert)g=255-g;
+    d[i]=d[i+1]=d[i+2]=g;
+  }
+  ctx.putImageData(img,0,0);
+  return out;
+}
+/* Pass 1 reads the image as it is; pass 2 reads an enhanced copy as one block with column spacing kept.
+   The better reading wins, and anything it missed is filled in from the other. */
+async function ocrMultiPass(source,onProgress){
+  try{await loadTesseract()}catch(err){throw new Error('Text recognition is unavailable right now. Check your connection, or enter the details below.')}
+  let base;
+  try{base=await canvasFromSource(source)}catch(err){
+    return [await ocrInput(source,onProgress)];
+  }
+  let passIndex=0;
+  const worker=await Tesseract.createWorker('eng',1,{logger:m=>{
+    if(onProgress&&m&&m.status==='recognizing text')onProgress(Math.round((passIndex*100+(m.progress||0)*100)/2));
+  }});
+  const passes=[];
+  try{
+    const first=await worker.recognize(base);
+    passes.push({text:(first&&first.data&&first.data.text)||'',words:(first&&first.data&&first.data.words)||null});
+    passIndex=1;
+    try{
+      await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+      const second=await worker.recognize(enhanceForOcr(base));
+      passes.push({text:(second&&second.data&&second.data.text)||'',words:(second&&second.data&&second.data.words)||null});
+    }catch(err){console.warn('Second OCR pass skipped',err)}
+  }finally{await worker.terminate().catch(()=>{})}
+  return passes;
+}
 function parseBookingOcr(text,trip,words,fileHint){
   const normalized=normalizeOcrText(text);
   const lines=normalized.split('\n');
@@ -944,19 +1231,36 @@ function parseBookingOcr(text,trip,words,fileHint){
     let cursor=0;
     passengers=passengers.map(p=>{if(p.seat||cursor>=fallbackSeats.length)return p;const seat=fallbackSeats[cursor++];usedSeats.add(seat);return {...p,seat}});
   }
-  return {type,transport:{
+  /* Boarding cut-offs and the day the ticket was bought are not the journey: read labelled times first,
+     and keep those lines out of the unlabelled fallback. */
+  const travelLines=lines.filter(l=>!OCR_NON_TRAVEL_LINE.test(l));
+  const travelText=travelLines.join('\n');
+  const looseTimes=extractOcrTimes(travelText),looseDates=extractOcrDates(travelText,trip);
+  const departureTime=timeAfterLabel(lines,/\b(?:depart(?:s|ure|ing)?|dep\.?|std|etd)\b/i)||looseTimes[0]||times[0]||'';
+  const arrivalTime=timeAfterLabel(lines,/\b(?:arriv(?:al|es|e|ing)|arr\.?|sta|eta)\b/i)||looseTimes.find(v=>v!==departureTime)||'';
+  let transport={
     operator:operatorName,
     vehicleType:extractVehicleType(normalized),
     origin:route.origin||labelValue(lines,/(?:^|\s)(?:from|origin|departure|departing)\b/i),
     destination:route.destination||labelValue(lines,/(?:^|\s)(?:to|destination|arrival|arriving)\b/i),
-    travelDate:dates[0]||'',
-    departureTime:times[0]||'',
-    arrivalTime:times[1]||'',
+    travelDate:looseDates[0]||dates[0]||'',
+    departureTime,
+    arrivalTime,
     durationMinutes:duration,
     passengers,
     total:money.value?String(money.value):'',totalCurrency:money.value?money.currency:'',
     ticketNumber:code||hintCode
-  }};
+  };
+  /* Flights carry airport codes and an airline code: those identify the journey better than loose text. */
+  const flight=extractFlight(normalized);
+  if(flight){
+    if(flight.origin&&flight.destination){transport.origin=flight.origin;transport.destination=flight.destination}
+    if(flight.operator||flight.flightNumber)transport.operator=[flight.operator,flight.flightNumber].filter(Boolean).join(' ');
+    transport.vehicleType='Flight';
+  }
+  /* Header-row layouts ("FROM  TO" over the values) need the word positions. */
+  if(words&&words.length)transport=applyColumnFields(transport,ocrColumnFields(words),trip);
+  return {type,transport};
 }
 /* Fills what the image did not contain: derived times, and city names resolved through a place lookup. */
 async function enrichBooking(booking,text,trip,type){
@@ -1171,7 +1475,7 @@ function BookingCreator({trip,initial,onSave,onClose}){
     if(!isPdf&&!String(file.type||'').startsWith('image/')){setStatus('Choose an image (photo or screenshot) or a PDF file.');return}
     setScanning(true);setStatus(isPdf?'Opening the PDF…':'Preparing the image…');setFilled([]);
     try{
-      let text='',words=null,nextAttachment=null;
+      let text='',words=null,nextAttachment=null,passes=null;
       if(isPdf){
         const doc=await loadPdfDocument(file);
         setStatus(`Reading ${doc.numPages>1?'the first two pages of ':''}the PDF…`);
@@ -1191,12 +1495,18 @@ function BookingCreator({trip,initial,onSave,onClose}){
         const dataUrl=await readFileAsDataUrl(file);
         nextAttachment={type:'image',label:'Booking',value:dataUrl};
         setStatus('Reading the ticket… the first scan can take up to a minute.');
-        const result=await ocrInput((await upscaleForOcr(dataUrl))||file,pct=>setStatus(`Reading the ticket… ${pct}%`));
-        text=result.text;words=result.words;
+        passes=await ocrMultiPass((await upscaleForOcr(dataUrl))||dataUrl,pct=>setStatus(`Reading the ticket… ${pct}%`));
+        const longest=passes.slice().sort((a,b)=>String(b.text||'').length-String(a.text||'').length)[0]||{text:'',words:null};
+        text=longest.text;words=longest.words;
       }
       setAttachment(nextAttachment);
       if(!text.trim()){setStatus('No readable text was found. The file is attached — enter the details below.');return}
-      const parsed=parseBookingOcr(text,trip,words,file&&file.name);
+      let parsed;
+      if(passes&&passes.length>1){
+        /* The better of the two readings wins; fields it missed come from the other. */
+        const multi=parseBookingOcrMulti(passes,trip,file&&file.name);
+        parsed=multi.parsed;text=multi.text;
+      }else parsed=parseBookingOcr(text,trip,words,file&&file.name);
       /* A ticket printed in another currency is converted into this trip's currency. */
       let currencyNote='';
       const scanned=parsed.type==='stay'?parsed.stay:parsed.transport;
@@ -1542,6 +1852,15 @@ function photoIsPhotograph(title,description){
   if(/\.(svg|gif|png|tif|tiff)$/i.test(name))return false;
   return !/(\bmap\b|\bmaps\b|diagram|logo|coat of arms|painting|drawing|sketch|illustration|poster|stamp|screenshot|\bchart\b|\bgraph\b|floor plan|ai[- ]?generated|generated by|midjourney|stable diffusion|dall[- ]?e|3d render)/i.test(hay);
 }
+/* Old scans, postcards and pre-digital shots are what made the slideshow look like the 90s. */
+function photoLooksOld(title,description,dateText){
+  const hay=String(title||'')+' '+String(description||'');
+  if(/\b(vintage|archival|archive|historic(?:al)? (?:photo|image|picture)|old (?:photo|picture|postcard)|postcard|scans?|scanned|film|negative|sepia|black and white|b&w|monochrome|colonial|19th century|20th century)\b/i.test(hay))return true;
+  const years=[...hay.matchAll(/\b(1[5-9]\d{2}|200[0-4])\b/g)].map(m=>Number(m[1]));
+  if(years.length&&Math.min(...years)<2005)return true;
+  const taken=Number((String(dateText||'').match(/\b(1[5-9]\d{2}|20\d{2})\b/)||[])[1]);
+  return taken>0&&taken<2005;
+}
 /* Camera dumps, banners and map uploads are not travel photography. */
 function photoIsScenic(title){
   const name=String(title||'');
@@ -1552,7 +1871,7 @@ function photoIsScenic(title){
 /* The slideshow is a 16:9 frame, so only wide, large frames look right in it. */
 function photoWanted(item){
   const width=Number(item&&item.width)||0,height=Number(item&&item.height)||0;
-  if(width<1100||!height)return false;
+  if(width<1400||!height)return false;
   const ratio=width/height;
   return ratio>=1.2&&ratio<=2.6;
 }
@@ -1563,6 +1882,7 @@ function photoRank(item,words){
   if(item.width>=2000)score+=25;else if(item.width>=1400)score+=12;
   if(words.some(w=>name.includes(w)))score+=40;
   if(/quality image|featured picture/i.test(item.tags||''))score+=30;
+  if(item.year>=2015)score+=15;else if(item.year>=2010)score+=6;
   /* Flickr dumps and dated snapshots look like camera rolls, not a travel board. */
   if(/\(1\d{8,}\)/.test(name))score-=30;
   if(/\b(19|20)\d{2}\b/.test(name))score-=10;
@@ -1599,7 +1919,9 @@ async function buildPhotoPool(query){
         if(!info.url)return;
         const meta=String((info.extmetadata&&info.extmetadata.ImageDescription&&info.extmetadata.ImageDescription.value)||'').replace(/<[^>]*>/g,' ');
         if(!photoIsPhotograph(page.title,meta))return;
-        const item={src:info.thumburl||info.url,title:page.title||'',width:Number(info.width)||0,height:Number(info.height)||0,
+        const taken=String((info.extmetadata&&(info.extmetadata.DateTimeOriginal||info.extmetadata.DateTime)&&(info.extmetadata.DateTimeOriginal||info.extmetadata.DateTime).value)||'');
+        if(photoLooksOld(page.title,meta,taken))return;
+        const item={src:info.thumburl||info.url,title:page.title||'',year:Number((taken.match(/\b(19|20)\d{2}\b/)||[])[0])||0,width:Number(info.width)||0,height:Number(info.height)||0,
           tags:String((info.extmetadata&&info.extmetadata.Categories&&info.extmetadata.Categories.value)||'')};
         if(photoWanted(item))pool.push(item);
       });
@@ -1608,12 +1930,12 @@ async function buildPhotoPool(query){
   /* Openverse only fills the gaps; its casual snapshots never push out article photos. */
   if(pool.length<10){
     try{
-      const res=await fetchWithTimeout(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(place)}&page_size=40&mature=false`,{},9000);
+      const res=await fetchWithTimeout(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(place)}&page_size=40&mature=false&category=photograph&aspect_ratio=wide&size=large`,{},9000);
       if(res.ok){
         const json=await res.json();
         (json.results||[]).forEach(r=>{
           const item={src:r.url||r.thumbnail,title:r.title||'',width:Number(r.width)||0,height:Number(r.height)||0,tags:(r.tags||[]).map(t=>t.name).join(' ')};
-          if(photoWanted(item)&&photoIsPhotograph(item.title,''))pool.push(item);
+          if(photoWanted(item)&&photoIsPhotograph(item.title,'')&&!photoLooksOld(item.title,item.tags,''))pool.push(item);
         });
       }
     }catch(err){}
@@ -1627,15 +1949,48 @@ async function buildPhotoPool(query){
    downloaded or re-hosted here. If it is not running, the Openverse/Wikimedia
    search above still fills the slideshow. */
 /* Same machine as the page: 127.0.0.1 on the computer, the PC's own address on a phone. */
-const PHOTO_SERVICE_ORIGIN=(()=>{const host=location.hostname;const local=!host||host==='localhost'||host==='127.0.0.1'||host==='[::1]';return `http://${local?'127.0.0.1':host}:3211`;})();
+const PHOTO_SERVICE_ORIGIN=(()=>{
+  /* A hosted copy of derlog-photo-service (https) can be set per device: localStorage 'derlog.photoServiceUrl'. */
+  try{const saved=String(localStorage.getItem('derlog.photoServiceUrl')||'').trim();if(/^https:\/\//i.test(saved))return saved.replace(/\/+$/,'')}catch(err){}
+  /* In the APK, 127.0.0.1 is the phone itself and an https page may not call http: skip the local service there. */
+  if(NATIVE_SHELL)return '';
+  const host=location.hostname;const local=!host||host==='localhost'||host==='127.0.0.1'||host==='[::1]';return `http://${local?'127.0.0.1':host}:3211`;})();
 function photoServiceUrls(payload,limit){
   const list=Array.isArray(payload&&payload.photos)?payload.photos:[];
   const urls=list.map(p=>String(typeof p==='string'?p:(p&&(p.imageUrl||p.url))||'').trim()).filter(u=>/^https?:\/\//i.test(u));
   return [...new Set(urls)].slice(0,Math.max(1,Number(limit)||10));
 }
+/* Pexels: curated, modern travel photography. Needs a free API key (pexels.com/api), set at build time
+   (DERLOG_PEXELS_KEY) or per device in localStorage 'derlog.pexelsKey'. Without one this step is skipped. */
+function pexelsKey(){try{return String(window.DERLOG_PEXELS_KEY||localStorage.getItem('derlog.pexelsKey')||'').trim()}catch(err){return ''}}
+/* In the APK, requests go through Android's own HTTP stack (no browser CORS rules); elsewhere plain fetch. */
+async function fetchJsonCompat(url,headers,ms){
+  const cap=window.Capacitor,http=cap&&cap.Plugins&&cap.Plugins.CapacitorHttp;
+  if(NATIVE_SHELL&&http&&typeof http.request==='function'){
+    const res=await http.request({url,method:'GET',headers:headers||{},connectTimeout:ms,readTimeout:ms});
+    if(!res||res.status<200||res.status>=300)throw new Error('HTTP '+(res&&res.status));
+    return typeof res.data==='string'?JSON.parse(res.data):res.data;
+  }
+  const res=await fetchWithTimeout(url,{headers:headers||{}},ms);
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  return res.json();
+}
+function pexelsUrls(payload,limit){
+  const list=Array.isArray(payload&&payload.photos)?payload.photos:[];
+  const urls=list
+    .filter(ph=>ph&&ph.src&&Number(ph.width)>=Number(ph.height)*1.3&&!/\b(selfie|portrait|model|fashion|wedding)\b/i.test(String(ph.alt||'')))
+    .map(ph=>String(ph.src.large2x||ph.src.large||'')).filter(u=>/^https:\/\//i.test(u));
+  return [...new Set(urls)].slice(0,Math.max(1,Number(limit)||10));
+}
+async function fetchPexelsPhotos(place,limit){
+  const key=pexelsKey();
+  if(!key||!place)return [];
+  const json=await fetchJsonCompat(`https://api.pexels.com/v1/search?query=${encodeURIComponent(place)}&orientation=landscape&size=large&per_page=40`,{Authorization:key},10000);
+  return pexelsUrls(json,limit);
+}
 async function fetchPhotographs(query,limit){
   const place=String(query||'').trim(),count=Math.max(1,Math.min(20,Number(limit)||10));
-  if(place){
+  if(place&&PHOTO_SERVICE_ORIGIN){
     try{
       const res=await fetchWithTimeout(`${PHOTO_SERVICE_ORIGIN}/api/photos?query=${encodeURIComponent(place)}&limit=${count}`,{},12000);
       if(res.ok){
@@ -1644,6 +1999,10 @@ async function fetchPhotographs(query,limit){
       }
     }catch(err){console.warn('DerLog photo service unavailable, using Openverse/Wikimedia',err)}
   }
+  try{
+    const urls=await fetchPexelsPhotos(String(place).split(',')[0].trim(),count);
+    if(urls.length>=Math.min(5,count))return urls;
+  }catch(err){console.warn('Pexels unavailable, using Wikimedia/Openverse',err)}
   const {items}=await buildPhotoPool(place);
   return items.slice(0,count).map(p=>p.src);
 }
@@ -1651,7 +2010,7 @@ async function fetchPhotographs(query,limit){
 function osmInterestScore(place){
   const kind=String(place&&place.kind||'').toLowerCase();
   let score=5;
-  if(/museum|attraction|viewpoint|zoo|theme park/.test(kind))score+=1.5;
+  if(/museum|attraction|viewpoint|zoo|theme park|place of worship/.test(kind))score+=1.5;
   if(/archaeological|monument|memorial|castle|ruins|temple|shrine|fort/.test(kind))score+=2.1;
   if(/park|garden|nature reserve|beach/.test(kind))score+=1.1;
   if(place&&place.wikidata)score+=0.8;
@@ -1660,17 +2019,52 @@ function osmInterestScore(place){
   if(place&&place.imageUrl)score+=0.3;
   return Math.round(Math.min(10,score)*10)/10;
 }
-/* Nearby sights from OpenStreetMap. Several public mirrors exist, so try each of them before giving up. */
-async function fetchOverpassPlaces(lat,lng,radius){
-  const query=`[out:json][timeout:25];(node(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];way(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];relation(around:${radius},${lat},${lng})[name][tourism~"attraction|museum|viewpoint|zoo|theme_park"];node(around:${radius},${lat},${lng})[name][historic];way(around:${radius},${lat},${lng})[name][historic];node(around:${radius},${lat},${lng})[name][leisure=park];way(around:${radius},${lat},${lng})[name][leisure=park];);out center tags 60;`;
-  const mirrors=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass.osm.ch/api/interpreter'];
-  /* Ask every mirror at once and take the first usable answer, so one slow mirror cannot stall the tab. */
-  const attempts=mirrors.map(mirror=>fetchWithTimeout(mirror,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)},9000)
+/* Wikipedia fallback ranking: how much people read about a place, and in how many languages. */
+function wikiInterestScore(insight,km){
+  const views=Math.max(0,Number(insight&&insight.views)||0),langs=Math.max(0,Number(insight&&insight.langs)||0);
+  const score=4+Math.log10(1+views)*1.1+Math.min(1.5,langs/40)+Math.max(0,1-(Number(km)||0)/20);
+  return Math.round(Math.min(10,score)*10)/10;
+}
+/* Nearby sights from OpenStreetMap. Overpass is a free community service with several global mirrors:
+   ask them all at once, take the first usable answer, and keep the query light so it finishes in seconds.
+   (overpass.osm.ch is not a mirror: it only holds Switzerland.) */
+const OVERPASS_MIRRORS=['https://overpass-api.de/api/interpreter','https://lz4.overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+function buildOverpassQuery(lat,lng,radius){
+  const around=`(around:${radius},${lat},${lng})`;
+  return `[out:json][timeout:20];(`
+    +`nwr${around}[name][tourism~"^(attraction|museum|viewpoint|zoo|theme_park)$"];`
+    +`nwr${around}[name][historic~"^(archaeological_site|castle|ruins|fort|monument|temple|city_gate|palace|memorial)$"];`
+    +`nwr${around}[name][historic][~"^(wikidata|wikipedia)$"~"."];`
+    +`nwr${around}[name][leisure~"^(park|garden|nature_reserve)$"][wikidata];`
+    +`nwr${around}[name][amenity=place_of_worship][wikidata];`
+    +`);out center tags 90;`;
+}
+/* Resolves with the first non-null result; null only when every attempt came back empty. */
+function firstUsable(promises){
+  return new Promise(resolve=>{
+    let pending=promises.length;
+    if(!pending)return resolve(null);
+    promises.forEach(p=>Promise.resolve(p).then(v=>{if(v)resolve(v);else if(--pending===0)resolve(null)},()=>{if(--pending===0)resolve(null)}));
+  });
+}
+async function queryOverpass(query,timeoutMs){
+  const body='data='+encodeURIComponent(query);
+  return firstUsable(OVERPASS_MIRRORS.map(mirror=>fetchWithTimeout(mirror,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body},timeoutMs)
     .then(res=>res.ok?res.json():null)
-    .then(json=>json&&Array.isArray(json.elements)&&json.elements.length?json.elements:null)
-    .catch(()=>null));
-  const results=await Promise.all(attempts);
-  return results.find(Boolean)||null;
+    .then(json=>json&&Array.isArray(json.elements)&&json.elements.length?json.elements:null)));
+}
+async function fetchOverpassPlaces(lat,lng,radius){
+  /* City-sized first (fast), then a wider net only if that area is thin. */
+  const radii=radius?[radius]:[12000,35000];
+  let best=null;
+  for(let i=0;i<radii.length;i++){
+    let found=await queryOverpass(buildOverpassQuery(lat,lng,radii[i]),12000);
+    /* A busy mirror often answers on the second try. */
+    if(!found){await new Promise(r=>setTimeout(r,1200));found=await queryOverpass(buildOverpassQuery(lat,lng,radii[i]),14000)}
+    if(found&&(!best||found.length>best.length))best=found;
+    if(best&&best.length>=8)break;
+  }
+  return best;
 }
 /* Fallback source: the most written-about places near the trip, straight from Wikipedia's geo index. */
 async function fetchWikipediaGeoPlaces(lat,lng){
@@ -2768,7 +3162,8 @@ function App(){
   }
   (async()=>{
     try{
-      const elements=await fetchOverpassPlaces(lat,lng,25000);
+      let elements=null;
+      try{elements=await fetchOverpassPlaces(lat,lng)}catch(err){console.warn('Overpass unavailable',err)}
       if(cancelled)return;
       const insights=new Map();
       let usedFallback=false;
@@ -2777,7 +3172,7 @@ function App(){
       const seen=new Set();
       candidates=elements.map(el=>{
         const tags=el.tags||{};
-        const kind=tags.tourism||tags.historic||tags.leisure||'Place';
+        const kind=tags.tourism||tags.historic||tags.leisure||tags.amenity||'Place';
         const wiki=String(tags.wikipedia||'');
         const wikiTitle=wiki?wiki.replace(/^[a-z]{2}:/i,''):'';
         const address=[tags['addr:street'],tags['addr:housenumber'],tags['addr:suburb'],tags['addr:city'],tags['addr:state'],tags['addr:country']].filter(Boolean).join(', ');
@@ -2790,8 +3185,19 @@ function App(){
           imageUrl:image,hasImage:Boolean(image||tags.wikimedia_commons),hasDescription:Boolean(tags.description)
         };
       }).filter(x=>x.title&&Number.isFinite(x.lat)&&Number.isFinite(x.lng)&&!seen.has(x.title.toLowerCase())&&seen.add(x.title.toLowerCase()));
-      }else{
-        throw new Error('OpenStreetMap did not answer. Try again in a moment.');
+      }
+      if(!candidates.length){
+        /* OpenStreetMap had nothing usable (or was down): Wikipedia's geo index knows the notable places nearby. */
+        let wiki=null;
+        try{wiki=await fetchWikipediaGeoPlaces(lat,lng)}catch(err){console.warn('Wikipedia places unavailable',err)}
+        if(cancelled)return;
+        if(wiki&&wiki.length){
+          usedFallback=true;
+          wiki.forEach(item=>insights.set(item.place.id,item.insight));
+          candidates=wiki.map(item=>item.place);
+        }else if(!elements||!elements.length){
+          throw new Error('Recommendations could not be loaded. Check your connection and try again.');
+        }
       }
       if(cancelled)return;
       if(!candidates.length){setDestinationError('No mapped recommendations found nearby yet.');setDestinationLoading(false);return}
@@ -2800,13 +3206,14 @@ function App(){
       const places=candidates.map(c=>{
         const description=professionalText(truncateText(c.description||destinationFallback(c,activeTrip.location||activeTrip.title),220));
         const km=distanceKm(center,[c.lat,c.lng]);
-        const score=Math.round((osmInterestScore(c)+Math.max(0,1.2-km/40))*10)/10;
-        return {...c,description,score,popularity:0};
+        const insight=insights.get(c.id);
+        const score=insight?wikiInterestScore(insight,km):Math.round((osmInterestScore(c)+Math.max(0,1.2-km/40))*10)/10;
+        return {...c,description,score,popularity:insight?insight.views:0};
       }).sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
       /* Drop a broad parent page ("Angkor") when the more specific place ("Angkor Wat") ranks higher. */
       const pruned=places.filter(p=>!places.some(o=>o!==p&&o.score>p.score&&o.title.toLowerCase().startsWith(p.title.toLowerCase()+' ')));
       const ranked=pruned.slice(0,24);
-      const sourceLabel='Ranked by OpenStreetMap interest · nearby places, most notable first';
+      const sourceLabel=usedFallback?'Ranked by Wikipedia popularity · nearby places, most notable first':'Ranked by OpenStreetMap interest · nearby places, most notable first';
       setDestinationPlaces(ranked);
       setDestinationSource(sourceLabel);
       if(ranked.length)setData(d=>({...d,destinationCache:{...(d.destinationCache||{}),[cacheKey]:{places:ranked,source:sourceLabel,savedAt:new Date().toISOString()}}}));
@@ -3042,7 +3449,7 @@ function App(){
  const backExit=()=>{try{const plugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(plugin&&typeof plugin.exitApp==='function')plugin.exitApp()}catch(err){}};
  /* The bridge may arrive after the first script, so re-check once the app mounts. */
  useEffect(()=>{markNativeShell()},[]);
- /* Keep the real Android status bar in step with the app theme. */
+ /* Full screen: hide the Android status bar (colour/style still follow the theme for when it is swiped in). */
  useEffect(()=>{
   const bar=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StatusBar;
   if(!bar)return;
@@ -3051,6 +3458,8 @@ function App(){
   try{
    Promise.resolve(bar.setBackgroundColor({color:dark?'#040811':'#FFFFFF'})).catch(()=>{});
    Promise.resolve(bar.setStyle({style:dark?'DARK':'LIGHT'})).catch(()=>{});
+   /* The app runs full screen: no status bar. MainActivity also re-hides it whenever the window regains focus. */
+   if(typeof bar.hide==='function')Promise.resolve(bar.hide()).catch(()=>{});
   }catch(err){}
  },[data.theme]);
  const backActionRef=useRef(null);
@@ -3291,7 +3700,7 @@ function App(){
   {previewAttachment&&<div className="absolute inset-0 bg-black/85 backdrop-blur-md z-[90] flex items-center justify-center p-5"><div className="modal-bg w-full max-w-[320px] border rounded-[28px] p-4 space-y-3"><div className="flex justify-between items-center"><span className="text-xs font-medium accent-txt inline-flex items-center gap-1.5"><Icon name={previewAttachment.type==='pdf'?'fileText':'image'} size={12}/>{previewAttachment.label||'Booking'}</span><button onClick={()=>setPreviewAttachment(null)} aria-label="Close image" className="w-7 h-7 rounded-full glass-pill flex items-center justify-center"><Icon name="close" size={12}/></button></div>{previewAttachment.type==='pdf'?<div className="space-y-2"><iframe src={previewAttachment.value} title="Booking PDF" className="w-full h-72 rounded-2xl bg-white border border-white/10"/><a href={previewAttachment.value} download={previewAttachment.name||'booking.pdf'} className="block text-center glass-pill rounded-full py-2.5 text-[11.5px] accent-txt">Open or download PDF</a></div>:<div className="rounded-2xl overflow-hidden max-h-80 flex justify-center bg-black border border-white/10"><img src={previewAttachment.value} alt="Booking attachment" className="object-contain max-h-80 w-full"/></div>}</div></div>}
  </div>
 }
-try{window.__DERLOG_TEST__={decodeGoogleCredential,parseBookingOcr,extractOcrPassengers,extractOcrCode,extractOcrMoney,normalizeOcrText,migrateData,buildICS,money,currencyOf,convertMoney,isMediaPayload,blankTrip,distanceKm,cleanBucketQuery,placeNameScore,rateLines,osmInterestScore,photoIsPhotograph,buildPhotoPool,photoServiceUrls,PHOTO_SERVICE_ORIGIN,APP_VERSION,BUILD_NUMBER}}catch(err){}
+try{window.__DERLOG_TEST__={ocrColumnFields,extractFlight,applyColumnFields,bookingScore,parseBookingOcrMulti,timeAfterLabel,photoLooksOld,pexelsUrls,photoWanted,wikiInterestScore,firstUsable,buildOverpassQuery,decodeGoogleCredential,parseBookingOcr,extractOcrPassengers,extractOcrCode,extractOcrMoney,normalizeOcrText,migrateData,buildICS,money,currencyOf,convertMoney,isMediaPayload,blankTrip,distanceKm,cleanBucketQuery,placeNameScore,rateLines,osmInterestScore,photoIsPhotograph,buildPhotoPool,photoServiceUrls,PHOTO_SERVICE_ORIGIN,APP_VERSION,BUILD_NUMBER}}catch(err){}
 class DerLogErrorBoundary extends React.Component {
  constructor(props){super(props);this.state={error:null};}
  static getDerivedStateFromError(error){return {error};}
@@ -3312,8 +3721,12 @@ try{
  const rootNode=document.getElementById('root');
  const mount=boot=>{
    window.__DERLOG_BOOT__=boot;
+   splashProgress(85);
    const root=ReactDOM.createRoot(rootNode);
    root.render(<div id="derlog-app"><DerLogErrorBoundary><App/></DerLogErrorBoundary></div>);
+   /* Two frames later the first screen has painted: lift the launch splash. */
+   const nextFrame=window.requestAnimationFrame?window.requestAnimationFrame.bind(window):(fn=>setTimeout(fn,16));
+   nextFrame(()=>nextFrame(()=>{try{window.__derlogSplash&&window.__derlogSplash.done()}catch(err){}}));
    if(!window.Capacitor && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol))navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Offline copy unavailable:',err));
  };
  bootDerLog().then(mount).catch(err=>{console.warn('DerLog boot fallback:',err);mount({data:migrateData(loadDerLogData()),bucketList:loadBucketList()})});

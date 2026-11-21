@@ -1,7 +1,8 @@
 // Builds www/: the self-contained app bundle that Capacitor packages into the APK.
 // Everything the UI needs (React, Tailwind, Leaflet, PDF.js, fonts) is local, so
 // the app starts and works with no network. Only the optional OCR reader still
-// pulls its library from a CDN, because its model files need a download anyway.
+// pulls its library from a CDN (loaded on demand, never at launch), because its
+// model files need a download anyway.
 import { readFile, writeFile, mkdir, rm, cp } from "node:fs/promises";
 import { build } from "esbuild";
 
@@ -56,13 +57,19 @@ page =
   <script src="./assets/pdf.min.js"></script>
   <link rel="stylesheet" href="./assets/leaflet.css" />
   <link rel="stylesheet" href="./assets/fonts.css" />
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 ` +
   page.slice(styleAt);
 
 // The APK shell always fills the screen: the OS draws the real status bar there.
 // The flag lives on <html> because the app rewrites body.className for its theme.
 page = page.replace('<html lang="en">', '<html lang="en" class="native-shell">');
+
+// Optional: bake a free Pexels API key into the bundle (DERLOG_PEXELS_KEY=... npm run build)
+// to get curated travel photography in the slideshow. Without it, Wikimedia/Openverse are used.
+if (process.env.DERLOG_PEXELS_KEY) {
+  const tag = `<script>window.DERLOG_PEXELS_KEY=${JSON.stringify(process.env.DERLOG_PEXELS_KEY.trim())};</script>\n  `;
+  page = page.replace('<script src="./assets/tailwind.js"></script>', tag + '<script src="./assets/tailwind.js"></script>');
+}
 
 await writeFile(`${OUT}/index.html`, page);
 

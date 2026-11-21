@@ -130,6 +130,70 @@ assert.equal(api.photoServiceUrls({photos:[{imageUrl:'https://i.pinimg.com/a.jpg
 assert.equal(api.PHOTO_SERVICE_ORIGIN,'http://127.0.0.1:3211');
 assert.ok(api.APP_VERSION&&api.BUILD_NUMBER);
 
+
+// Flight boarding pass: airport + airline codes win, and boarding/issue times are not the journey.
+const flightText=['BOARDING PASS','Passenger: DARA SOK','Flight K6 801','PNH -> REP','Date 24 Nov 2026','Boarding 07:10','Departure 08:05','Arrival 08:55','Gate B4 Seat 14C','Issued 10 Nov 2026','Booking Ref: X7Q2LM'].join('\n');
+const flight=api.parseBookingOcr(flightText,{startDate:'2026-11-24',endDate:'2026-11-26'},null,'boarding-pass.png');
+assert.equal(flight.type,'transport');
+assert.equal(flight.transport.vehicleType,'Flight');
+assert.equal(flight.transport.origin,'Phnom Penh (PNH)');
+assert.equal(flight.transport.destination,'Siem Reap (REP)');
+assert.equal(flight.transport.operator,'Cambodia Angkor Air K6 801');
+assert.equal(flight.transport.departureTime,'08:05','boarding time must not be the departure');
+assert.equal(flight.transport.arrivalTime,'08:55');
+assert.equal(flight.transport.travelDate,'2026-11-24','issue date must not be the travel date');
+assert.equal(api.extractFlight('THE TOTAL 12 PAID'),null,'ordinary text is not a flight');
+assert.equal(api.extractFlight('Flight AA 100 JFK LAX').operator,'American Airlines');
+
+// Header row of labels with values underneath, read from word positions.
+const cell=(text,x0,x1,y0)=>({text,bbox:{x0,x1,y0,y1:y0+20},confidence:90});
+const colWords=[cell('FROM',50,110,100),cell('TO',300,340,100),cell('DATE',520,580,100),
+  cell('Phnom',50,120,140),cell('Penh',128,180,140),cell('Siem',300,350,140),cell('Reap',358,410,140),cell('18',520,545,140),cell('Nov',552,590,140),cell('2026',598,650,140)];
+const cols=api.ocrColumnFields(colWords);
+assert.equal(cols.origin,'Phnom Penh');
+assert.equal(cols.destination,'Siem Reap');
+assert.equal(cols.date,'18 Nov 2026');
+const colTicket=api.parseBookingOcr('Giant Ibis Minivan\nFROM TO DATE\nPhnom Penh Siem Reap 18 Nov 2026\nSeat 12A',{startDate:'2026-11-18'},colWords,'ticket.png');
+assert.equal(colTicket.transport.origin,'Phnom Penh');
+assert.equal(colTicket.transport.destination,'Siem Reap');
+assert.equal(colTicket.transport.travelDate,'2026-11-18');
+
+// Two OCR passes: the more complete reading wins and the other fills its gaps.
+const multi=api.parseBookingOcrMulti([
+  {text:'E-TICKET\nFrom Phnom Penh To Siem Reap\nDate 18 Nov 2026\nTotal US$ 32.00',words:null},
+  {text:'E-TICKET\nFrom Phnom Penh To Siem Reap\nDate 18 Nov 2026\nDeparture 08:30 Arrival 12:00\nSeat 12A\nTotal US$ 32.00',words:null}
+],{startDate:'2026-11-18'},'e-ticket.png');
+assert.equal(multi.parsed.transport.departureTime,'08:30');
+assert.equal(multi.parsed.transport.arrivalTime,'12:00');
+assert.ok(api.bookingScore(multi.parsed)>=api.bookingScore(api.parseBookingOcr('E-TICKET\nFrom Phnom Penh To Siem Reap',null,null,'')));
+assert.equal(api.parseBookingOcrMulti([{text:'  '}],null,''),null);
+
+// Recommendations: the first usable mirror wins, and the query is light and global.
+assert.deepEqual(await api.firstUsable([new Promise(r=>setTimeout(()=>r(null),30)),Promise.resolve([1,2]),Promise.reject(new Error('down'))]),[1,2]);
+assert.equal(await api.firstUsable([Promise.resolve(null),Promise.reject(new Error('down'))]),null);
+assert.equal(await api.firstUsable([]),null);
+const overpassQuery=api.buildOverpassQuery(11.5564,104.9282,12000);
+assert.ok(overpassQuery.includes('around:12000,11.5564,104.9282')&&overpassQuery.includes('out center tags'));
+assert.ok(!/node\(around/.test(overpassQuery),'uses nwr, not three separate node/way/relation queries');
+assert.ok(api.wikiInterestScore({views:90000,langs:60},1)>api.wikiInterestScore({views:40,langs:1},1));
+assert.ok(api.wikiInterestScore({views:1e9,langs:999},0)<=10);
+
+// Photos: scans, postcards and pre-digital shots are out; recent wide frames are in.
+assert.equal(api.photoLooksOld('File:Angkor Wat 1998.jpg','',''),true);
+assert.equal(api.photoLooksOld('File:Angkor postcard.jpg','',''),true);
+assert.equal(api.photoLooksOld('File:Temple.jpg','scanned slide',''),true);
+assert.equal(api.photoLooksOld('File:Temple.jpg','','1993-04-02 10:00:00'),true);
+assert.equal(api.photoLooksOld('File:Angkor Wat sunrise.jpg','Sunrise over the temple','2019-02-11 06:10:00'),false);
+assert.equal(api.photoWanted({width:1200,height:700}),false);
+assert.equal(api.photoWanted({width:3000,height:1800}),true);
+assert.deepEqual(api.pexelsUrls({photos:[
+  {width:4000,height:2500,alt:'Temple at sunrise',src:{large2x:'https://images.pexels.com/a.jpeg'}},
+  {width:2000,height:3000,alt:'Tall',src:{large2x:'https://images.pexels.com/tall.jpeg'}},
+  {width:4000,height:2500,alt:'Portrait of a model',src:{large2x:'https://images.pexels.com/m.jpeg'}},
+  {width:4000,height:2500,alt:'Beach',src:{large2x:'http://insecure.example/b.jpeg'}}
+]}),['https://images.pexels.com/a.jpeg']);
+assert.deepEqual(api.pexelsUrls(null),[]);
+
 console.log('DerLog fixtures passed');
 
 // Google credential decoding: only name/email/picture should ever be used, never the raw token.

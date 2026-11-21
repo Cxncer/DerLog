@@ -6,7 +6,7 @@
   "description": "DerLog travel planner — static PWA plus optional Android shell",
   "scripts": {
     "build": "node tools/build-www.mjs",
-    "icons": "node tools/make-icons.mjs && capacitor-assets generate --android --iconBackgroundColor '#040811' --iconBackgroundColorDark '#040811' --splashBackgroundColor '#040811' --splashBackgroundColorDark '#040811'",
+    "icons": "node tools/make-icons.mjs && capacitor-assets generate --android --iconBackgroundColor '#000000' --iconBackgroundColorDark '#000000' --splashBackgroundColor '#000000' --splashBackgroundColorDark '#000000'",
     "android:add": "npx cap add android",
     "android:sync": "npm run build && npx cap sync android",
     "android:open": "npx cap open android",
